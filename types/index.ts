@@ -16,9 +16,12 @@ export interface BuildingConfig {
   active: boolean
 }
 
+export type VisitSource = 'Inspection' | 'Repair'
+export type VisitStatus = 'Completed' | 'Pending' | 'In Progress'
+
 export interface Visit {
   date: string            // ISO date string
-  source: string          // 'Inspection' | 'Repair'
+  source: VisitSource
   technician: string
   building: string
   unitId: string
@@ -31,25 +34,25 @@ export interface Visit {
   problem: string
   workPerformed: string
   priority: string
-  status: string
+  status: VisitStatus
   materialCost: number
   photos: VisitPhotos
 }
 
 export interface VisitPhotos {
-  common: string
-  exterior: string
-  windows: string
-  wallCeiling: string
-  bath: string
-  kitchen: string
-  floor: string
-  electrical: string
-  plumbing: string
-  hvac: string
-  extra: string
-  before: string
-  after: string
+  common: string | null
+  exterior: string | null
+  windows: string | null
+  wallCeiling: string | null
+  bath: string | null
+  kitchen: string | null
+  floor: string | null
+  electrical: string | null
+  plumbing: string | null
+  hvac: string | null
+  extra: string | null
+  before: string | null
+  after: string | null
 }
 
 export interface ReviewEntry {
@@ -62,6 +65,7 @@ export interface ReviewEntry {
   visitType: string
   workPerformed: string
   duration: number
+  materialCost: number
   approved: boolean
   pmComments: string
   approvedBy: string
@@ -82,15 +86,6 @@ export interface UnitSummary {
   repairVisits: number
 }
 
-export interface BuildingStats {
-  name: string
-  config: BuildingConfig
-  units: UnitSummary[]
-  pendingApprovals: number
-  hoursUsedThisCycle: number
-  materialsThisCycle: number
-}
-
 export interface HoursBalance {
   planHours: number
   usedHours: number
@@ -101,15 +96,11 @@ export interface HoursBalance {
   cycleEnd: string
 }
 
-// Extend NextAuth types
-declare module 'next-auth' {
-  interface Session {
-    user: {
-      name?: string | null
-      email?: string | null
-      image?: string | null
-      role: UserRole
-      buildings: string[]
-    }
-  }
+export interface BuildingStats {
+  name: string
+  config: BuildingConfig
+  units: UnitSummary[]
+  pendingApprovals: number
+  hoursBalance: HoursBalance
+  materialsThisCycle: number
 }
