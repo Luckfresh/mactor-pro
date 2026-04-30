@@ -66,7 +66,7 @@ export async function getAllVisits(filters?: {
   const rows = res.data.values ?? []
 
   return rows
-    .filter(row => row[0] && row[3])
+    .filter(row => row.length >= 4 && row[0] && row[3])
     .map(rowToVisit)
     .filter(v => {
       if (filters?.building && v.building !== filters.building) return false
