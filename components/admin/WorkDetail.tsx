@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { Visit } from '@/types'
+import { PDFDownloadButton } from '@/components/shared/PDFDownloadButton'
 
 interface WorkDetailProps {
   visit: Visit
@@ -76,6 +77,10 @@ export function WorkDetail({ visit }: WorkDetailProps) {
               </div>
             </div>
           )}
+          <PDFDownloadButton
+            payload={{ type: 'visit', building: visit.building, unitId: visit.unitId, date: visit.date }}
+            filename={`visit-${visit.unitId}-${visit.date}.pdf`}
+          />
         </div>
       )}
     </div>
