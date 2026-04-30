@@ -5,15 +5,21 @@ const SHEET = 'Building_Config'
 
 export async function getBuildingConfigs(): Promise<BuildingConfig[]> {
   const sheets = await getSheetsClient()
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET}!A2:E100`,
-  })
+
+  let res
+  try {
+    res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET}!A2:E`,
+    })
+  } catch (err) {
+    throw new Error(`Failed to read ${SHEET} sheet: ${err instanceof Error ? err.message : String(err)}`)
+  }
 
   const rows = res.data.values ?? []
 
   return rows
-    .filter(row => row[0])
+    .filter(row => row[0] && row.length >= 5)
     .map(row => ({
       buildingName: String(row[0] ?? '').trim(),
       hoursPerCycle: toNumber(row[1]),
