@@ -1,15 +1,6 @@
+import { getAllVisits } from '@/lib/sheets/all-visits'
 import { WorkDetail } from '@/components/admin/WorkDetail'
 import Link from 'next/link'
-import type { Visit } from '@/types'
-
-async function getVisits(building: string, unitId: string): Promise<Visit[]> {
-  const res = await fetch(
-    `${process.env.NEXTAUTH_URL}/api/visits?building=${encodeURIComponent(building)}&unitId=${encodeURIComponent(unitId)}`,
-    { cache: 'no-store' }
-  )
-  if (!res.ok) return []
-  return res.json()
-}
 
 export default async function UnitDetailPage({
   params,
@@ -19,9 +10,11 @@ export default async function UnitDetailPage({
   const { building, unitId } = await params
   const buildingName = decodeURIComponent(building)
   const unitName = decodeURIComponent(unitId)
-  const visits = await getVisits(buildingName, unitName)
 
-  const totalHours = visits.reduce((s, v) => s + v.duration, 0)
+  const visits = await getAllVisits({ building: buildingName, unitId: unitName })
+  const sorted = visits.sort((a, b) => b.date.localeCompare(a.date))
+
+  const totalHours = Math.round(visits.reduce((s, v) => s + v.duration, 0) * 10) / 10
   const totalCost = visits.reduce((s, v) => s + v.materialCost, 0)
 
   return (
@@ -35,12 +28,11 @@ export default async function UnitDetailPage({
         <span>/</span>
         <span className="text-white font-medium">{unitName}</span>
       </div>
-
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-white text-xl font-bold">{unitName}</h1>
         <div className="flex gap-6 text-right">
           <div>
-            <p className="text-white font-semibold">{Math.round(totalHours * 10) / 10}h</p>
+            <p className="text-white font-semibold">{totalHours}h</p>
             <p className="text-slate-400 text-xs">total horas</p>
           </div>
           <div>
@@ -53,13 +45,12 @@ export default async function UnitDetailPage({
           </div>
         </div>
       </div>
-
       <div className="space-y-3">
-        {visits.length === 0 && (
+        {sorted.length === 0 && (
           <p className="text-slate-400">Sin trabajos registrados para esta unidad.</p>
         )}
-        {visits.map((v, i) => (
-          <WorkDetail key={i} visit={v} />
+        {sorted.map((v, i) => (
+          <WorkDetail key={`${v.date}-${v.timeIn}-${v.unitId}`} visit={v} />
         ))}
       </div>
     </div>

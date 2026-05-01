@@ -10,18 +10,25 @@ export async function GET(request: Request) {
   const building = searchParams.get('building') ?? undefined
   const unitId = searchParams.get('unitId') ?? undefined
   const source = searchParams.get('source') ?? undefined
-  const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined
+  const limitParam = searchParams.get('limit')
+  const limit = limitParam ? parseInt(limitParam, 10) : undefined
 
-  // Managers can only query their assigned buildings
-  if (session.user.role === 'manager' && building) {
-    if (!session.user.buildings.includes(building)) {
+  // Managers: enforce building scope
+  if (session.user.role === 'manager') {
+    if (building && !session.user.buildings.includes(building)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
   }
 
   let visits = await getAllVisits({ building, unitId, source })
+
+  // If manager and no building specified, filter to assigned buildings
+  if (session.user.role === 'manager' && !building) {
+    visits = visits.filter(v => session.user.buildings.includes(v.building))
+  }
+
   visits = visits.sort((a, b) => b.date.localeCompare(a.date))
-  if (limit) visits = visits.slice(0, limit)
+  if (limit && limit > 0) visits = visits.slice(0, limit)
 
   return NextResponse.json(visits)
 }

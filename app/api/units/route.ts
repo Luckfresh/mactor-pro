@@ -15,6 +15,11 @@ export async function GET(request: Request) {
     }
   }
 
-  const units = await getUnitsSummary(building)
+  let units = await getUnitsSummary(building)
+
+  if (session.user.role === 'manager' && !building) {
+    units = units.filter(u => session.user.buildings.includes(u.building))
+  }
+
   return NextResponse.json(units)
 }

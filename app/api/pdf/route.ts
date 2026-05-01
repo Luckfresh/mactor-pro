@@ -18,6 +18,10 @@ export async function POST(request: Request) {
     date: string
   }
 
+  if (session.user.role === 'manager' && !session.user.buildings.includes(building)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   if (type !== 'visit') {
     return NextResponse.json({ error: 'Unsupported report type' }, { status: 400 })
   }

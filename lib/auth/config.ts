@@ -27,7 +27,7 @@ const USERS: AppUser[] = [
 // Passwords stored as env vars (plain text for now)
 const PASSWORDS: Record<string, string> = {
   [process.env.ADMIN_EMAIL ?? '']: process.env.ADMIN_PASSWORD ?? '',
-  'eddie@example.com': process.env.EDDIE_PASSWORD ?? 'change_me',
+  'eddie@example.com': process.env.EDDIE_PASSWORD ?? '',
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
