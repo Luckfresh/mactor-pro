@@ -1,4 +1,4 @@
-import { getSheetsClient, SPREADSHEET_ID, serialDateToISO, toNumber, toBoolean } from './client'
+import { getSheetsClient, getSpreadsheetId, serialDateToISO, toNumber, toBoolean } from './client'
 import type { ReviewEntry } from '@/types'
 
 const SHEET = 'Review_Log'
@@ -38,7 +38,7 @@ export async function getReviewLog(filters?: {
   let res
   try {
     res = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: getSpreadsheetId(),
       range: `${SHEET}!A2:O`,
     })
   } catch (err) {

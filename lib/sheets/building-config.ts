@@ -1,4 +1,4 @@
-import { getSheetsClient, SPREADSHEET_ID, toNumber, toBoolean } from './client'
+import { getSheetsClient, getSpreadsheetId, toNumber, toBoolean } from './client'
 import type { BuildingConfig } from '@/types'
 
 const SHEET = 'Building_Config'
@@ -9,7 +9,7 @@ export async function getBuildingConfigs(): Promise<BuildingConfig[]> {
   let res
   try {
     res = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: getSpreadsheetId(),
       range: `${SHEET}!A2:E`,
     })
   } catch (err) {

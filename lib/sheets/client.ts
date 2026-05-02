@@ -1,24 +1,22 @@
 import { google } from 'googleapis'
 
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  },
-  scopes: [
-    'https://www.googleapis.com/auth/spreadsheets',
-    'https://www.googleapis.com/auth/drive.readonly',
-  ],
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+)
+oauth2Client.setCredentials({
+  refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
 })
 
 export async function getSheetsClient() {
-  return google.sheets({ version: 'v4', auth })
+  return google.sheets({ version: 'v4', auth: oauth2Client })
 }
 
-if (!process.env.SPREADSHEET_ID) {
-  throw new Error('Missing required environment variable: SPREADSHEET_ID')
+export function getSpreadsheetId(): string {
+  const id = process.env.SPREADSHEET_ID
+  if (!id) throw new Error('Missing required environment variable: SPREADSHEET_ID')
+  return id
 }
-export const SPREADSHEET_ID = process.env.SPREADSHEET_ID
 
 // Convert a Sheets serial date number to ISO string
 export function serialDateToISO(serial: number | string): string {

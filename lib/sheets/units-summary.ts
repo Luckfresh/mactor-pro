@@ -1,4 +1,4 @@
-import { getSheetsClient, SPREADSHEET_ID, serialDateToISO, toNumber } from './client'
+import { getSheetsClient, getSpreadsheetId, serialDateToISO, toNumber } from './client'
 import type { UnitSummary } from '@/types'
 
 const SHEET = 'Units_Sumary'  // note: typo is in the actual sheet name
@@ -13,7 +13,7 @@ export async function getUnitsSummary(building?: string): Promise<UnitSummary[]>
   let res
   try {
     res = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: getSpreadsheetId(),
       range: `${SHEET}!A2:J`,
     })
   } catch (err) {

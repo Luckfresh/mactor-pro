@@ -1,4 +1,4 @@
-import { getSheetsClient, SPREADSHEET_ID, serialDateToISO, toNumber } from './client'
+import { getSheetsClient, getSpreadsheetId, serialDateToISO, toNumber } from './client'
 import type { Visit, VisitPhotos, VisitSource, VisitStatus } from '@/types'
 
 const SHEET = 'All_Visits'
@@ -56,7 +56,7 @@ export async function getAllVisits(filters?: {
   let res
   try {
     res = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: getSpreadsheetId(),
       range: `${SHEET}!A2:AC`,
     })
   } catch (err) {
