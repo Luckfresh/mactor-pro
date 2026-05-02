@@ -16,7 +16,7 @@ export function NavBar({ userName, role }: NavBarProps) {
     { href: '/', label: 'Dashboard' },
     { href: '/approvals', label: 'Approvals' },
     { href: '/work-orders', label: 'Work Orders' },
-    { href: '/inspect', label: 'Inspect' },
+    { href: '/inspections', label: 'Inspections' },
     { href: '/tenants', label: 'Tenants' },
     { href: '/qr-codes', label: 'QR Codes' },
   ]
@@ -25,6 +25,7 @@ export function NavBar({ userName, role }: NavBarProps) {
     { href: '/', label: 'Overview' },
     { href: '/approvals', label: 'Approvals' },
     { href: '/work-orders', label: 'Work Orders' },
+    { href: '/inspections', label: 'Inspections' },
     { href: '/tenants', label: 'Tenants' },
   ]
 

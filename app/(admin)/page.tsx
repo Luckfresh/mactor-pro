@@ -3,6 +3,7 @@ import { getBuildingConfigs } from '@/lib/sheets/building-config'
 import { getAllVisits } from '@/lib/sheets/all-visits'
 import { getUnitsSummary } from '@/lib/sheets/units-summary'
 import { getPendingApprovalCount } from '@/lib/sheets/review-log'
+import { getPendingInspectionCount } from '@/lib/sheets/inspection-requests'
 import { getClientPlans } from '@/lib/sheets/client-plans'
 import { getCycleBalances } from '@/lib/sheets/cycle-balances'
 import {
@@ -41,6 +42,8 @@ export default async function AdminOverviewPage() {
   const clientBalance = activePlan
     ? calculateClientHoursBalance(allVisits, activePlan, closedCycles, cycleLabel)
     : null
+
+  const totalPendingInspections = await getPendingInspectionCount()
 
   const buildings: BuildingStats[] = await Promise.all(
     allowedConfigs.map(async config => {
@@ -86,9 +89,11 @@ export default async function AdminOverviewPage() {
       href: totalPending > 0 ? '/approvals' : undefined,
     },
     {
-      label: 'Up to Date',
-      value: buildings.filter(b => b.pendingApprovals === 0).length,
-      sub: 'Buildings with no pending',
+      label: 'Pending Inspections',
+      value: totalPendingInspections,
+      sub: totalPendingInspections > 0 ? 'Awaiting start' : 'None pending ✓',
+      alert: totalPendingInspections > 0,
+      href: totalPendingInspections > 0 ? '/inspections' : undefined,
     },
   ]
 
