@@ -6,6 +6,8 @@ import {
   claimWorkOrder,
   startWorkOrder,
   completeWorkOrder,
+  approveReportedWorkOrder,
+  rejectWorkOrder,
 } from '@/lib/sheets/work-orders'
 import { getCurrentCycleLabel } from '@/lib/hours'
 import { revalidatePath } from 'next/cache'
@@ -69,4 +71,18 @@ export async function actionCompleteWorkOrder(
   )
   revalidatePath('/work-orders')
   revalidatePath('/')
+}
+
+export async function actionApproveWorkOrder(id: string) {
+  const session = await auth()
+  if (!session) throw new Error('Unauthorized')
+  await approveReportedWorkOrder(id)
+  revalidatePath('/work-orders')
+}
+
+export async function actionRejectWorkOrder(id: string, reason: string) {
+  const session = await auth()
+  if (!session) throw new Error('Unauthorized')
+  await rejectWorkOrder(id, reason)
+  revalidatePath('/work-orders')
 }

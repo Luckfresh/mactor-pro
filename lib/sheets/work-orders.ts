@@ -60,6 +60,7 @@ export async function createWorkOrder(data: {
   priority: string
   createdBy: string
   cycleLabel: string
+  status?: WorkOrderStatus
 }): Promise<string> {
   const sheets = await getSheetsClient()
   const id = `WO-${Date.now()}`
@@ -73,7 +74,7 @@ export async function createWorkOrder(data: {
       values: [[
         id, today, data.building, data.unitId, data.areaName,
         data.description, data.priority, data.createdBy,
-        'Pending', '', '', '', '', '', '', data.cycleLabel, '',
+        data.status ?? 'Pending', '', '', '', '', '', '', data.cycleLabel, '',
       ]],
     },
   })
@@ -110,12 +111,20 @@ export async function startWorkOrder(id: string): Promise<void> {
   const sheets = await getSheetsClient()
   const { sheetRow } = await findWorkOrderRow(id)
   const today = new Date().toISOString().split('T')[0]
+  const spreadsheetId = getSpreadsheetId()
 
+  // Update status and startedAt separately to preserve claimedBy/claimedAt
   await sheets.spreadsheets.values.update({
-    spreadsheetId: getSpreadsheetId(),
-    range: `${SHEET}!I${sheetRow}:L${sheetRow}`,
+    spreadsheetId,
+    range: `${SHEET}!I${sheetRow}`,
     valueInputOption: 'USER_ENTERED',
-    requestBody: { values: [['In Progress', '', '', today]] },
+    requestBody: { values: [['In Progress']] },
+  })
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `${SHEET}!L${sheetRow}`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: { values: [[today]] },
   })
 }
 
@@ -150,7 +159,7 @@ export async function completeWorkOrder(
     },
   })
 
-  // Append completed work order to All_Visits
+  // Write to All_Visits
   const emptyPhotos = Array(13).fill('')
   await sheets.spreadsheets.values.append({
     spreadsheetId,
@@ -177,5 +186,27 @@ export async function completeWorkOrder(
         ...emptyPhotos,
       ]],
     },
+  })
+}
+
+export async function approveReportedWorkOrder(id: string): Promise<void> {
+  const sheets = await getSheetsClient()
+  const { sheetRow } = await findWorkOrderRow(id)
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: getSpreadsheetId(),
+    range: `${SHEET}!I${sheetRow}`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: { values: [['Pending']] },
+  })
+}
+
+export async function rejectWorkOrder(id: string, reason: string): Promise<void> {
+  const sheets = await getSheetsClient()
+  const { sheetRow } = await findWorkOrderRow(id)
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: getSpreadsheetId(),
+    range: `${SHEET}!I${sheetRow}:Q${sheetRow}`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: { values: [['Rejected', '', '', '', '', '', '', '', reason]] },
   })
 }

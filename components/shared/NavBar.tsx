@@ -16,6 +16,7 @@ export function NavBar({ userName, role }: NavBarProps) {
     { href: '/', label: 'Dashboard' },
     { href: '/approvals', label: 'Approvals' },
     { href: '/work-orders', label: 'Work Orders' },
+    { href: '/inspect', label: 'Inspect' },
   ]
 
   const managerLinks = [

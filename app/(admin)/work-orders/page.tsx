@@ -5,10 +5,12 @@ import Link from 'next/link'
 import type { WorkOrderStatus } from '@/types'
 
 const STATUS_CHIP: Record<WorkOrderStatus, string> = {
+  'Reported':    'bg-purple-900/50 text-purple-300',
   'Pending':     'bg-slate-700 text-slate-300',
   'Claimed':     'bg-sky-900/50 text-sky-300',
   'In Progress': 'bg-amber-900/50 text-amber-300',
   'Completed':   'bg-green-900/50 text-green-300',
+  'Rejected':    'bg-red-900/50 text-red-300',
 }
 
 const PRIORITY_COLOR: Record<string, string> = {
