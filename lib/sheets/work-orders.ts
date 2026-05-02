@@ -7,7 +7,7 @@ const ALL_VISITS = 'All_Visits'
 // Columns: workOrderId(A) createdAt(B) building(C) unitId(D) areaName(E)
 //          description(F) priority(G) createdBy(H) status(I) claimedBy(J)
 //          claimedAt(K) startedAt(L) completedAt(M) duration(N) materialCost(O)
-//          cycleLabel(P) notes(Q) photoBeforeUrl(R) photoAfterUrl(S)
+//          cycleLabel(P) notes(Q) photoBeforeUrl(R) photoAfterUrl(S) claimNotes(T)
 
 function rowToWorkOrder(row: unknown[]): WorkOrder {
   return {
@@ -30,6 +30,7 @@ function rowToWorkOrder(row: unknown[]): WorkOrder {
     notes: String(row[16] ?? '').trim(),
     photoBeforeUrl: String(row[17] ?? '').trim(),
     photoAfterUrl: String(row[18] ?? '').trim(),
+    claimNotes: String(row[19] ?? '').trim(),
   }
 }
 
@@ -110,7 +111,7 @@ async function findWorkOrderRow(id: string): Promise<{ row: unknown[]; sheetRow:
   return { row: rows[rowIdx], sheetRow: rowIdx + 2 }
 }
 
-export async function claimWorkOrder(id: string, by: string, photoBeforeUrl?: string): Promise<void> {
+export async function claimWorkOrder(id: string, by: string, photoBeforeUrl?: string, claimNotes?: string): Promise<void> {
   const sheets = await getSheetsClient()
   const { sheetRow } = await findWorkOrderRow(id)
   const today = new Date().toISOString().split('T')[0]
@@ -123,12 +124,12 @@ export async function claimWorkOrder(id: string, by: string, photoBeforeUrl?: st
     requestBody: { values: [['Claimed', by, today]] },
   })
 
-  if (photoBeforeUrl) {
+  if (photoBeforeUrl || claimNotes) {
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `${SHEET}!R${sheetRow}`,
+      range: `${SHEET}!R${sheetRow}:T${sheetRow}`,
       valueInputOption: 'USER_ENTERED',
-      requestBody: { values: [[photoBeforeUrl]] },
+      requestBody: { values: [[photoBeforeUrl ?? '', '', claimNotes ?? '']] },
     })
   }
 }
@@ -195,8 +196,20 @@ export async function completeWorkOrder(
     })
   }
 
+  // Build photo columns for All_Visits (cols 16-28)
+  const photoArr = Array(13).fill('')
+  const photoBeforeStored = String(row[17] ?? '').trim()
+  const photoAfterStored = photoAfterUrl ?? ''
+  if (photoBeforeStored) photoArr[11] = photoBeforeStored // col 27 = Before
+  if (photoAfterStored)  photoArr[12] = photoAfterStored  // col 28 = After
+
+  // Compose problem: description + claim notes if present
+  const claimNotesStored = String(row[19] ?? '').trim()
+  const problemField = claimNotesStored
+    ? `${String(row[5] ?? '')} — ${claimNotesStored}`
+    : String(row[5] ?? '')
+
   // Write to All_Visits
-  const emptyPhotos = Array(13).fill('')
   await sheets.spreadsheets.values.append({
     spreadsheetId,
     range: `${ALL_VISITS}!A:AC`,
@@ -210,16 +223,16 @@ export async function completeWorkOrder(
         String(row[3] ?? ''), // unitId
         '',                    // areaType
         String(row[4] ?? ''), // areaName
-        'Work Order',
+        'Repair',              // visitType — was 'Work Order', fixed
         '',                    // timeIn
         '',                    // timeOut
         duration,
-        String(row[5] ?? ''), // problem = description
-        notes,                 // workPerformed
+        problemField,          // problem = description + claim notes
+        notes,                 // workPerformed (after notes)
         String(row[6] ?? ''), // priority
         'Completed',
         materialCost,
-        ...emptyPhotos,
+        ...photoArr,
       ]],
     },
   })

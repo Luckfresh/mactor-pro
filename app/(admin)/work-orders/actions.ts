@@ -40,10 +40,10 @@ export async function actionCreateWorkOrder(formData: FormData) {
   redirect('/work-orders')
 }
 
-export async function actionClaimWorkOrder(id: string, photoBeforeUrl?: string) {
+export async function actionClaimWorkOrder(id: string, photoBeforeUrl?: string, claimNotes?: string) {
   const session = await auth()
   if (!session || session.user.role !== 'admin') throw new Error('Unauthorized')
-  await claimWorkOrder(id, session.user.name ?? session.user.email ?? 'unknown', photoBeforeUrl)
+  await claimWorkOrder(id, session.user.name ?? session.user.email ?? 'unknown', photoBeforeUrl, claimNotes)
   revalidatePath('/work-orders')
 }
 

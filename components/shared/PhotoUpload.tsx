@@ -4,10 +4,11 @@ import { useState, useRef } from 'react'
 
 interface Props {
   label: string
-  folderPath?: string   // e.g. "Work Orders/WO-1234" or "Inspections/INS-5678"
-  onUploaded: (url: string) => void
+  folderPath?: string
+  onUploaded: (value: string) => void  // comma-separated URLs
   onClear?: () => void
-  value?: string
+  value?: string  // comma-separated URLs
+  maxPhotos?: number
 }
 
 async function compressImage(file: File, maxWidthPx = 1280, quality = 0.75): Promise<Blob> {
@@ -28,10 +29,23 @@ async function compressImage(file: File, maxWidthPx = 1280, quality = 0.75): Pro
   })
 }
 
-export function PhotoUpload({ label, folderPath, onUploaded, onClear, value }: Props) {
+export function PhotoUpload({ label, folderPath, onUploaded, onClear, value, maxPhotos = 5 }: Props) {
   const [progress, setProgress] = useState<number | null>(null)
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const photoUrls = value ? value.split(',').map(u => u.trim()).filter(Boolean) : []
+  const canAddMore = photoUrls.length < maxPhotos
+
+  function removePhoto(idx: number) {
+    const updated = photoUrls.filter((_, i) => i !== idx)
+    if (updated.length === 0) {
+      onClear?.()
+      onUploaded('')
+    } else {
+      onUploaded(updated.join(', '))
+    }
+  }
 
   async function handleFile(file: File) {
     setError('')
@@ -42,7 +56,7 @@ export function PhotoUpload({ label, folderPath, onUploaded, onClear, value }: P
 
       const fd = new FormData()
       fd.append('file', new File([compressed], 'photo.jpg', { type: 'image/jpeg' }))
-      fd.append('label', label)
+      fd.append('label', `${label}-${photoUrls.length + 1}`)
       if (folderPath) fd.append('path', folderPath)
 
       const xhr = new XMLHttpRequest()
@@ -63,55 +77,71 @@ export function PhotoUpload({ label, folderPath, onUploaded, onClear, value }: P
       setTimeout(() => setProgress(null), 600)
 
       if (result.error) throw new Error(result.error)
-      onUploaded(result.url!)
+
+      const updated = [...photoUrls, result.url!].join(', ')
+      onUploaded(updated)
+      if (inputRef.current) inputRef.current.value = ''
     } catch (err) {
       setProgress(null)
       setError(err instanceof Error ? err.message : 'Upload failed')
     }
   }
 
-  if (value) {
-    return (
-      <div className="flex items-center gap-3 p-2 bg-green-50 border border-green-200 rounded-lg">
-        <a href={value} target="_blank" rel="noreferrer" className="text-green-700 text-xs font-semibold underline underline-offset-2 truncate flex-1">
-          Photo uploaded ✓
-        </a>
-        {onClear && (
-          <button onClick={onClear} className="text-slate-400 hover:text-red-500 text-xs shrink-0">Remove</button>
-        )}
-      </div>
-    )
-  }
-
   return (
-    <div>
-      <label
-        className={`flex flex-col items-center justify-center h-12 rounded-lg border-2 border-dashed transition-colors cursor-pointer ${
-          progress !== null
-            ? 'border-indigo-300 bg-indigo-50'
-            : 'border-gray-300 hover:border-indigo-400 hover:text-indigo-500'
-        } text-slate-400`}
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
-        />
-        {progress !== null ? (
-          <div className="w-full px-4">
-            <div className="h-1.5 bg-indigo-100 rounded-full overflow-hidden">
-              <div className="h-full bg-indigo-500 transition-all duration-200 rounded-full" style={{ width: `${progress}%` }} />
+    <div className="flex flex-col gap-2">
+      {/* Uploaded photos grid */}
+      {photoUrls.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {photoUrls.map((url, i) => {
+            const fileId = url.match(/id=([\w-]+)/)?.[1]
+            const thumb = fileId ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w120` : url
+            return (
+              <div key={i} className="relative group w-16 h-16">
+                <img
+                  src={thumb}
+                  alt={`${label} ${i + 1}`}
+                  className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                  onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                />
+                <button
+                  onClick={() => removePhoto(i)}
+                  className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ×
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Upload button */}
+      {canAddMore && (
+        <label className={`flex flex-col items-center justify-center h-12 rounded-lg border-2 border-dashed transition-colors cursor-pointer ${
+          progress !== null ? 'border-indigo-300 bg-indigo-50' : 'border-gray-300 hover:border-indigo-400 hover:text-indigo-500'
+        } text-slate-400`}>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
+          />
+          {progress !== null ? (
+            <div className="w-full px-4">
+              <div className="h-1.5 bg-indigo-100 rounded-full overflow-hidden">
+                <div className="h-full bg-indigo-500 transition-all duration-200 rounded-full" style={{ width: `${progress}%` }} />
+              </div>
+              <p className="text-[10px] text-indigo-600 text-center mt-1">{progress < 100 ? 'Subiendo…' : 'Listo'}</p>
             </div>
-            <p className="text-[10px] text-indigo-600 text-center mt-1">{progress < 100 ? 'Uploading…' : 'Done'}</p>
-          </div>
-        ) : (
-          <span className="text-xs">📷 Add photo</span>
-        )}
-      </label>
-      {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
+          ) : (
+            <span className="text-xs">📷 {photoUrls.length > 0 ? 'Agregar otra foto' : 'Agregar foto'}</span>
+          )}
+        </label>
+      )}
+
+      {error && <p className="text-red-600 text-xs">{error}</p>}
     </div>
   )
 }

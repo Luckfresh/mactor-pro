@@ -170,6 +170,7 @@ export interface WorkOrder {
   notes: string
   photoBeforeUrl: string
   photoAfterUrl: string
+  claimNotes: string
 }
 
 export type TenantReportStatus = 'Pending' | 'Approved' | 'Rejected' | 'Quoted' | 'Resolved'

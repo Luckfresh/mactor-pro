@@ -137,7 +137,7 @@ export function WorkOrderActions({ id, status, role }: Props) {
           <button
             disabled={isPending}
             onClick={() => startTransition(async () => {
-              await actionClaimWorkOrder(id, photoBeforeUrl || undefined)
+              await actionClaimWorkOrder(id, photoBeforeUrl || undefined, claimNotes || undefined)
               setLocalStatus('Claimed')
               setClaiming(false)
             })}

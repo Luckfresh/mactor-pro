@@ -97,7 +97,7 @@ export function WorkDetail({ visit }: WorkDetailProps) {
             </div>
           )}
           <PDFDownloadButton
-            payload={{ type: 'visit', building: visit.building, unitId: visit.unitId, date: visit.date }}
+            payload={{ type: 'visit', building: visit.building, unitId: visit.unitId, date: visit.date, source: visit.source }}
             filename={`visit-${visit.unitId}-${visit.date}.pdf`}
           />
         </div>
