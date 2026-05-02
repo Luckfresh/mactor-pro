@@ -15,13 +15,13 @@ export function NavBar({ userName, role }: NavBarProps) {
   const adminLinks = [
     { href: '/', label: 'Dashboard' },
     { href: '/approvals', label: 'Approvals' },
-    { href: '/settings', label: 'Settings' },
+    { href: '/work-orders', label: 'Work Orders' },
   ]
 
   const managerLinks = [
     { href: '/', label: 'Overview' },
     { href: '/approvals', label: 'Approvals' },
-    { href: '/history', label: 'History' },
+    { href: '/work-orders', label: 'Work Orders' },
   ]
 
   const links = role === 'admin' ? adminLinks : managerLinks

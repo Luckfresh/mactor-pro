@@ -130,6 +130,29 @@ export interface ClientHoursBalance {
   byBuilding: Record<string, number>
 }
 
+export type WorkOrderStatus = 'Pending' | 'Claimed' | 'In Progress' | 'Completed'
+export type WorkOrderPriority = 'Low' | 'Medium' | 'High' | 'Emergency'
+
+export interface WorkOrder {
+  id: string
+  createdAt: string
+  building: string
+  unitId: string
+  areaName: string
+  description: string
+  priority: WorkOrderPriority
+  createdBy: string
+  status: WorkOrderStatus
+  claimedBy: string
+  claimedAt: string
+  startedAt: string
+  completedAt: string
+  duration: number
+  materialCost: number
+  cycleLabel: string
+  notes: string
+}
+
 export interface BuildingStats {
   name: string
   config: BuildingConfig
