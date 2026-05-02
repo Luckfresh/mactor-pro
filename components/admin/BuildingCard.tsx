@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import type { BuildingStats } from '@/types'
 
-const BUILDING_COLORS: Record<number, string> = {
-  0: 'border-blue-500',
-  1: 'border-green-500',
-  2: 'border-amber-400',
+const ACCENT: Record<number, string> = {
+  0: 'border-l-indigo-500',
+  1: 'border-l-sky-500',
+  2: 'border-l-violet-500',
 }
 
 interface BuildingCardProps {
@@ -16,28 +16,39 @@ interface BuildingCardProps {
 
 export function BuildingCard({ stats, index, cycleStart, cycleEnd }: BuildingCardProps) {
   const slug = encodeURIComponent(stats.name)
+  const shortName = stats.name.replace('PHASE I ', '').replace('PHASE II ', '').replace('PHASE III ', '')
 
   return (
-    <Link href={`/buildings/${slug}`} className="block">
-      <div
-        className={`bg-slate-800 rounded-xl p-5 border-l-4 ${BUILDING_COLORS[index % 3]} hover:bg-slate-700/80 transition-colors cursor-pointer`}
-      >
-        <h3 className="text-white font-semibold text-sm mb-3">{stats.name}</h3>
-        <div className="grid grid-cols-2 gap-y-2 text-xs mb-3">
-          <span className="text-slate-400">Areas / Units</span>
-          <span className="text-white text-right">{stats.units.length}</span>
-          <span className="text-slate-400">Hours this cycle</span>
-          <span className="text-white text-right">{stats.hoursUsedThisCycle.toFixed(1)}h</span>
-          <span className="text-slate-400">Materials</span>
-          <span className="text-white text-right">
-            ${stats.materialsThisCycle.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </span>
-          <span className="text-slate-400">Approvals</span>
-          <span className={`text-right font-semibold ${stats.pendingApprovals > 0 ? 'text-red-400' : 'text-green-400'}`}>
-            {stats.pendingApprovals > 0 ? `${stats.pendingApprovals} pending ⚠` : 'Up to date ✓'}
-          </span>
+    <Link href={`/buildings/${slug}`} className="block group">
+      <div className={`bg-white rounded-xl border border-gray-200 shadow-sm border-l-4 ${ACCENT[index % 3]} hover:shadow-md hover:border-gray-300 transition-all`}>
+        <div className="p-5 border-b border-gray-100">
+          <h3 className="text-slate-900 font-bold text-sm">{shortName}</h3>
+          <p className="text-slate-500 text-xs mt-0.5">{stats.name.split(' ')[0]} {stats.name.split(' ')[1]} · {stats.units.length} units</p>
         </div>
-        <p className="text-slate-600 text-xs">Cycle: {cycleStart} – {cycleEnd}</p>
+        <div className="p-5 grid grid-cols-2 gap-y-3">
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-0.5">Hours</p>
+            <p className="text-xl font-extrabold text-indigo-600 tracking-tight">{stats.hoursUsedThisCycle.toFixed(1)}h</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-0.5">Materials</p>
+            <p className="text-xl font-extrabold text-slate-900 tracking-tight">
+              ${stats.materialsThisCycle.toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </p>
+          </div>
+        </div>
+        <div className="px-5 pb-4 flex items-center justify-between">
+          {stats.pendingApprovals > 0 ? (
+            <span className="text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded-full">
+              {stats.pendingApprovals} pending approval{stats.pendingApprovals !== 1 ? 's' : ''}
+            </span>
+          ) : (
+            <span className="text-xs font-semibold bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 rounded-full">
+              All clear ✓
+            </span>
+          )}
+          <span className="text-slate-400 text-xs group-hover:text-slate-600 transition-colors">→</span>
+        </div>
       </div>
     </Link>
   )

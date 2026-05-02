@@ -92,7 +92,7 @@ export default async function AdminOverviewPage() {
       label: 'Pending Inspections',
       value: totalPendingInspections,
       sub: totalPendingInspections > 0 ? 'Awaiting start' : 'None pending ✓',
-      alert: totalPendingInspections > 0,
+      warn: totalPendingInspections > 0,
       href: totalPendingInspections > 0 ? '/inspections' : undefined,
     },
   ]
@@ -100,21 +100,21 @@ export default async function AdminOverviewPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-white text-2xl font-bold">Dashboard</h1>
-        <p className="text-slate-400 text-sm mt-1">All buildings overview</p>
+        <h1 className="text-slate-900 text-2xl font-bold">Dashboard</h1>
+        <p className="text-slate-500 text-sm mt-1">All buildings overview</p>
       </div>
 
       <KPIRow tiles={kpis} />
 
       {clientBalance && (
-        <div className="bg-slate-800 rounded-xl p-5 mb-8">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-8">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-white font-semibold text-sm">Service Plan — {activePlan!.clientName}</h2>
+              <h2 className="text-slate-900 font-semibold text-sm">Service Plan — {activePlan!.clientName}</h2>
               <p className="text-slate-500 text-xs">{cycleRange}</p>
             </div>
             {clientBalance.extraHours > 0 && (
-              <span className="text-red-400 text-xs font-semibold bg-red-900/30 px-3 py-1 rounded-full">
+              <span className="text-red-700 text-xs font-semibold bg-red-50 border border-red-200 px-3 py-1 rounded-full">
                 {clientBalance.extraHours.toFixed(1)}h over — ${(clientBalance.extraHours * 75).toFixed(2)} extra
               </span>
             )}
@@ -128,14 +128,14 @@ export default async function AdminOverviewPage() {
         </div>
       )}
 
-      <h2 className="text-slate-300 text-sm font-semibold uppercase tracking-wide mb-3">Buildings</h2>
+      <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Buildings</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {buildings.map((b, i) => (
           <BuildingCard key={b.name} stats={b} index={i} cycleStart={cycleStart} cycleEnd={cycleEnd} />
         ))}
       </div>
 
-      <h2 className="text-slate-300 text-sm font-semibold uppercase tracking-wide mb-3">Recent Work</h2>
+      <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Recent Work</h2>
       <RecentWorkTable visits={recentVisits} />
     </div>
   )
