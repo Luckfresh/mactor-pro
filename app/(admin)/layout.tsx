@@ -11,12 +11,16 @@ export default async function AdminLayout({
   if (!session) redirect('/login')
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="flex h-screen bg-gray-50">
       <NavBar
         userName={session.user.name ?? ''}
         role={session.user.role}
       />
-      <main className="p-6">{children}</main>
+      <main className="flex-1 overflow-y-auto">
+        <div className="p-6 lg:p-8">
+          {children}
+        </div>
+      </main>
     </div>
   )
 }
