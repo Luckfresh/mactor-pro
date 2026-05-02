@@ -12,8 +12,8 @@ interface UnitListProps {
 const AREA_TYPES = ['Unit', 'Common Area', 'Exterior']
 
 const TAB_LABELS: Record<string, string> = {
-  'Unit': 'Unidades',
-  'Common Area': 'Áreas Comunes',
+  'Unit': 'Units',
+  'Common Area': 'Common Areas',
   'Exterior': 'Exterior',
 }
 
@@ -43,7 +43,7 @@ export function UnitList({ units, building }: UnitListProps) {
 
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <p className="text-slate-400 text-sm">Sin registros en esta categoría.</p>
+          <p className="text-slate-400 text-sm">No records in this category.</p>
         )}
         {filtered.map(unit => {
           const unitSlug = encodeURIComponent(unit.unitId)
@@ -57,20 +57,20 @@ export function UnitList({ units, building }: UnitListProps) {
                   <div>
                     <p className="text-white text-sm font-medium">{unit.unitId}</p>
                     <p className="text-slate-400 text-xs">
-                      {unit.totalVisits} visitas · Última: {unit.lastVisit || 'Sin registro'}
+                      {unit.totalVisits} visits · Last: {unit.lastVisit || 'No record'}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-6 text-right">
                   <div>
                     <p className="text-white text-sm font-semibold">{unit.totalHours}h</p>
-                    <p className="text-slate-400 text-xs">total horas</p>
+                    <p className="text-slate-400 text-xs">total hours</p>
                   </div>
                   <div>
                     <p className="text-white text-sm font-semibold">
                       ${unit.totalMaterialCost.toLocaleString('en-CA')}
                     </p>
-                    <p className="text-slate-400 text-xs">materiales</p>
+                    <p className="text-slate-400 text-xs">materials</p>
                   </div>
                   <span className="text-blue-400 text-lg">›</span>
                 </div>

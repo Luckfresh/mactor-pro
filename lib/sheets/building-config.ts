@@ -10,7 +10,7 @@ export async function getBuildingConfigs(): Promise<BuildingConfig[]> {
   try {
     res = await sheets.spreadsheets.values.get({
       spreadsheetId: getSpreadsheetId(),
-      range: `${SHEET}!A2:E`,
+      range: `${SHEET}!A2:F`,
     })
   } catch (err) {
     throw new Error(`Failed to read ${SHEET} sheet: ${err instanceof Error ? err.message : String(err)}`)
@@ -23,9 +23,10 @@ export async function getBuildingConfigs(): Promise<BuildingConfig[]> {
     .map(row => ({
       buildingName: String(row[0] ?? '').trim(),
       hoursPerCycle: toNumber(row[1]),
-      cycleDayStart: toNumber(row[2]) || 1,
+      cycleDayStart: toNumber(row[2]) || 25,
       managerEmail: String(row[3] ?? '').trim(),
       active: toBoolean(row[4]),
+      clientId: String(row[5] ?? '').trim(),
     }))
     .filter(b => b.active)
 }

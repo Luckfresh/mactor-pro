@@ -14,13 +14,14 @@ export function NavBar({ userName, role }: NavBarProps) {
 
   const adminLinks = [
     { href: '/', label: 'Dashboard' },
-    { href: '/settings', label: 'Configuración' },
+    { href: '/approvals', label: 'Approvals' },
+    { href: '/settings', label: 'Settings' },
   ]
 
   const managerLinks = [
     { href: '/', label: 'Overview' },
-    { href: '/approvals', label: 'Aprobaciones' },
-    { href: '/history', label: 'Historial' },
+    { href: '/approvals', label: 'Approvals' },
+    { href: '/history', label: 'History' },
   ]
 
   const links = role === 'admin' ? adminLinks : managerLinks
@@ -53,7 +54,7 @@ export function NavBar({ userName, role }: NavBarProps) {
           onClick={() => signOut({ callbackUrl: '/login' })}
           className="text-slate-500 hover:text-slate-300 text-xs"
         >
-          Salir
+          Sign out
         </button>
       </div>
     </nav>

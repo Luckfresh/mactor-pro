@@ -1,18 +1,16 @@
-import type { Visit, BuildingConfig, HoursBalance } from '@/types'
+import type { Visit, ClientPlan, CycleBalance, ClientHoursBalance } from '@/types'
 
-// Cycle convention: runs from cycleDayStart of month M to (cycleDayStart-1) of month M+1
-// Cycle label = the month M+1 (end month), e.g. "2026-05" = Apr 25 – May 24
-export function getCurrentCycleLabel(config: BuildingConfig): string {
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+
+export function getCurrentCycleLabel(cycleDayStart: number): string {
   const now = new Date()
   const day = now.getDate()
   const year = now.getFullYear()
-  const month = now.getMonth() + 1 // 1-indexed
+  const month = now.getMonth() + 1
 
-  if (day < config.cycleDayStart) {
-    // Before reset day: still in cycle that ends this month
+  if (day < cycleDayStart) {
     return `${year}-${String(month).padStart(2, '0')}`
   } else {
-    // On or after reset day: in new cycle that ends next month
     const endMonth = month === 12 ? 1 : month + 1
     const endYear = month === 12 ? year + 1 : year
     return `${endYear}-${String(endMonth).padStart(2, '0')}`
@@ -20,55 +18,93 @@ export function getCurrentCycleLabel(config: BuildingConfig): string {
 }
 
 export function getCycleDates(
-  config: BuildingConfig,
-  cycleLabel: string
+  cycleDayStart: number,
+  cycleLabel: string,
 ): { start: string; end: string } {
-  const [year, month] = cycleLabel.split('-').map(Number) // month = end month (1-indexed)
+  const [year, month] = cycleLabel.split('-').map(Number)
 
-  // Cycle ends on (cycleDayStart - 1) of end month
-  const endDate = new Date(year, month - 1, config.cycleDayStart - 1)
+  const endDate = new Date(year, month - 1, cycleDayStart - 1)
   const end = endDate.toISOString().split('T')[0]
 
-  // Cycle starts on cycleDayStart of previous month
   const startMonth = month === 1 ? 12 : month - 1
   const startYear = month === 1 ? year - 1 : year
-  const startDate = new Date(startYear, startMonth - 1, config.cycleDayStart)
+  const startDate = new Date(startYear, startMonth - 1, cycleDayStart)
   const start = startDate.toISOString().split('T')[0]
 
   return { start, end }
 }
 
-export function calculateHoursBalance(
+function getRolloverForCycle(
+  closedCycles: CycleBalance[],
+  currentLabel: string,
+  hoursPerCycle: number,
+): number {
+  const previous = closedCycles
+    .filter(c => c.cycleLabel < currentLabel)
+    .sort((a, b) => b.cycleLabel.localeCompare(a.cycleLabel))[0]
+
+  if (!previous) return 0
+  return Math.min(previous.rolledOverOut, hoursPerCycle * 3)
+}
+
+export function calculateClientHoursBalance(
   visits: Visit[],
-  config: BuildingConfig,
-  cycleLabel: string
-): HoursBalance {
-  const { start, end } = getCycleDates(config, cycleLabel)
+  clientPlan: ClientPlan,
+  closedCycles: CycleBalance[],
+  cycleLabel: string,
+): ClientHoursBalance {
+  const cycleDayStart = 25
+  const { start, end } = getCycleDates(cycleDayStart, cycleLabel)
+
+  const rolledOverHours = getRolloverForCycle(closedCycles, cycleLabel, clientPlan.hoursPerCycle)
+  const availableHours = clientPlan.hoursPerCycle + rolledOverHours
 
   const cycleVisits = visits.filter(
-    v => v.building === config.buildingName && v.date >= start && v.date <= end
+    v => clientPlan.buildings.includes(v.building) && v.date >= start && v.date <= end,
   )
 
-  const usedHours = cycleVisits.reduce((sum, v) => sum + v.duration, 0)
-  const rolledOverHours = 0
+  const usedHours = Math.round(cycleVisits.reduce((sum, v) => sum + v.duration, 0) * 100) / 100
+  const extraHours = Math.max(0, Math.round((usedHours - availableHours) * 100) / 100)
+
+  const byBuilding: Record<string, number> = {}
+  for (const building of clientPlan.buildings) {
+    const h = cycleVisits
+      .filter(v => v.building === building)
+      .reduce((sum, v) => sum + v.duration, 0)
+    byBuilding[building] = Math.round(h * 100) / 100
+  }
 
   return {
-    planHours: config.hoursPerCycle,
-    usedHours: Math.round(usedHours * 100) / 100,
+    clientId: clientPlan.clientId,
+    planHours: clientPlan.hoursPerCycle,
     rolledOverHours,
-    availableHours: Math.max(0, config.hoursPerCycle + rolledOverHours - usedHours),
+    availableHours,
+    usedHours,
+    extraHours,
     cycleLabel,
     cycleStart: start,
     cycleEnd: end,
+    byBuilding,
   }
+}
+
+export function getHoursUsedInBuilding(
+  visits: Visit[],
+  buildingName: string,
+  cycleStart: string,
+  cycleEnd: string,
+): number {
+  const used = visits
+    .filter(v => v.building === buildingName && v.date >= cycleStart && v.date <= cycleEnd)
+    .reduce((sum, v) => sum + v.duration, 0)
+  return Math.round(used * 100) / 100
 }
 
 export function formatCycleRange(start: string, end: string): string {
   const fmt = (iso: string) => {
     if (!iso) return ''
-    const [y, m, d] = iso.split('-')
-    const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
-    return `${parseInt(d)} ${months[parseInt(m) - 1]}`
+    const [, m, d] = iso.split('-')
+    return `${parseInt(d)} ${MONTHS[parseInt(m) - 1]}`
   }
   return `${fmt(start)} – ${fmt(end)}`
 }
@@ -76,6 +112,5 @@ export function formatCycleRange(start: string, end: string): string {
 export function formatDate(iso: string): string {
   if (!iso) return '—'
   const [y, m, d] = iso.split('-')
-  const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
-  return `${parseInt(d)} ${months[parseInt(m) - 1]} ${y}`
+  return `${parseInt(d)} ${MONTHS[parseInt(m) - 1]} ${y}`
 }

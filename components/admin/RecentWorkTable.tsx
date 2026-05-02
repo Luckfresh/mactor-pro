@@ -20,19 +20,19 @@ const BUILDING_COLOR: Record<string, string> = {
 
 export function RecentWorkTable({ visits }: RecentWorkTableProps) {
   if (visits.length === 0) {
-    return <p className="text-slate-400 text-sm">Sin trabajos recientes.</p>
+    return <p className="text-slate-400 text-sm">No recent work.</p>
   }
 
   return (
     <div className="bg-slate-800 rounded-xl overflow-hidden">
       <div className="grid grid-cols-[90px_80px_1fr_140px_70px_90px_90px] gap-2 px-4 py-2 text-slate-400 text-xs uppercase tracking-wide border-b border-slate-700">
-        <span>Fecha</span>
-        <span>Edificio</span>
-        <span>Unidad / Área</span>
-        <span>Tipo de trabajo</span>
-        <span>Horas</span>
-        <span>Costo</span>
-        <span>Estado</span>
+        <span>Date</span>
+        <span>Building</span>
+        <span>Unit / Area</span>
+        <span>Work Type</span>
+        <span>Hours</span>
+        <span>Cost</span>
+        <span>Status</span>
       </div>
       {visits.map((v, i) => {
         const buildingSlug = encodeURIComponent(v.building)
@@ -44,7 +44,7 @@ export function RecentWorkTable({ visits }: RecentWorkTableProps) {
           <Link
             key={i}
             href={`/buildings/${buildingSlug}/units/${unitSlug}`}
-            className="grid grid-cols-[90px_80px_1fr_140px_70px_90px_90px] gap-2 px-4 py-3 text-sm border-b border-slate-700/50 last:border-0 hover:bg-slate-700/50 transition-colors cursor-pointer"
+            className="grid grid-cols-[90px_80px_1fr_140px_70px_90px_90px] gap-2 px-4 py-3 text-sm border-b border-slate-700/50 last:border-0 hover:bg-slate-700/50 transition-colors"
           >
             <span className="text-slate-400 text-xs">{formatDate(v.date)}</span>
             <span>
@@ -66,7 +66,7 @@ export function RecentWorkTable({ visits }: RecentWorkTableProps) {
                   ? 'bg-amber-900/40 text-amber-400'
                   : 'bg-slate-700 text-slate-400'
               }`}>
-                {v.status === 'Completed' ? 'Completado' : v.status === 'Pending' ? 'Pendiente' : v.status}
+                {v.status === 'Completed' ? 'Completed' : v.status === 'Pending' ? 'Pending' : v.status}
               </span>
             </span>
           </Link>

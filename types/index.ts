@@ -5,22 +5,43 @@ export interface AppUser {
   name: string
   email: string
   role: UserRole
-  buildings: string[]  // building names this user can access; empty = all (admin)
+  buildings: string[]
 }
 
 export interface BuildingConfig {
   buildingName: string
   hoursPerCycle: number
-  cycleDayStart: number   // day of month cycle resets (e.g. 1)
+  cycleDayStart: number
   managerEmail: string
+  clientId: string
   active: boolean
+}
+
+export interface ClientPlan {
+  clientId: string
+  clientName: string
+  managerEmail: string
+  buildings: string[]
+  hoursPerCycle: number
+  active: boolean
+}
+
+export interface CycleBalance {
+  clientId: string
+  cycleLabel: string
+  plannedHours: number
+  usedHours: number
+  rolledOverIn: number
+  rolledOverOut: number
+  extraHours: number
+  closedAt: string
 }
 
 export type VisitSource = 'Inspection' | 'Repair'
 export type VisitStatus = 'Completed' | 'Pending' | 'In Progress'
 
 export interface Visit {
-  date: string            // ISO date string
+  date: string
   source: VisitSource
   technician: string
   building: string
@@ -30,7 +51,7 @@ export interface Visit {
   visitType: string
   timeIn: string
   timeOut: string
-  duration: number        // decimal hours
+  duration: number
   problem: string
   workPerformed: string
   priority: string
@@ -96,11 +117,24 @@ export interface HoursBalance {
   cycleEnd: string
 }
 
+export interface ClientHoursBalance {
+  clientId: string
+  planHours: number
+  rolledOverHours: number
+  availableHours: number
+  usedHours: number
+  extraHours: number
+  cycleLabel: string
+  cycleStart: string
+  cycleEnd: string
+  byBuilding: Record<string, number>
+}
+
 export interface BuildingStats {
   name: string
   config: BuildingConfig
   units: UnitSummary[]
   pendingApprovals: number
-  hoursBalance: HoursBalance
+  hoursUsedThisCycle: number
   materialsThisCycle: number
 }

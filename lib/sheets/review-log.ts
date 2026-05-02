@@ -58,6 +58,16 @@ export async function getReviewLog(filters?: {
 }
 
 export async function getPendingApprovalCount(building?: string): Promise<number> {
-  const entries = await getReviewLog({ building, approved: false })
-  return entries.filter(e => e.visitKey !== '').length
+  const sheets = await getSheetsClient()
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: getSpreadsheetId(),
+    range: `${SHEET}!A2:N`,
+  })
+  const rows = res.data.values ?? []
+  return rows.filter(row => {
+    if (!row[0] || String(row[0]).trim() === '') return false
+    const approvedRaw = String(row[9] ?? '').trim().toLowerCase()
+    if (building && String(row[3] ?? '').trim() !== building) return false
+    return approvedRaw === 'false' || approvedRaw === 'no' || approvedRaw === '0' || approvedRaw === ''
+  }).length
 }

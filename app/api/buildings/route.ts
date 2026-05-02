@@ -4,8 +4,10 @@ import { getBuildingConfigs } from '@/lib/sheets/building-config'
 import { getUnitsSummary } from '@/lib/sheets/units-summary'
 import { getPendingApprovalCount } from '@/lib/sheets/review-log'
 import { getAllVisits } from '@/lib/sheets/all-visits'
-import { getCurrentCycleLabel, calculateHoursBalance } from '@/lib/hours'
+import { getCurrentCycleLabel, getCycleDates, getHoursUsedInBuilding } from '@/lib/hours'
 import type { BuildingStats } from '@/types'
+
+const CYCLE_DAY_START = 25
 
 export async function GET() {
   const session = await auth()
@@ -13,28 +15,30 @@ export async function GET() {
 
   const configs = await getBuildingConfigs()
 
-  // Filter by assigned buildings for managers
   const allowedConfigs = session.user.role === 'admin'
     ? configs
     : configs.filter(c => session.user.buildings.includes(c.buildingName))
 
   const allVisits = await getAllVisits()
+  const cycleLabel = getCurrentCycleLabel(CYCLE_DAY_START)
+  const { start: cycleStart, end: cycleEnd } = getCycleDates(CYCLE_DAY_START, cycleLabel)
 
   const stats: BuildingStats[] = await Promise.all(
     allowedConfigs.map(async config => {
-      const units = await getUnitsSummary(config.buildingName)
-      const pending = await getPendingApprovalCount(config.buildingName)
-      const cycleLabel = getCurrentCycleLabel(config)
-      const hoursBalance = calculateHoursBalance(allVisits, config, cycleLabel)
+      const [units, pending] = await Promise.all([
+        getUnitsSummary(config.buildingName),
+        getPendingApprovalCount(config.buildingName),
+      ])
+      const hoursUsedThisCycle = getHoursUsedInBuilding(allVisits, config.buildingName, cycleStart, cycleEnd)
 
       return {
         name: config.buildingName,
         config,
         units,
         pendingApprovals: pending,
-        hoursBalance,
+        hoursUsedThisCycle,
         materialsThisCycle: allVisits
-          .filter(v => v.building === config.buildingName && v.date >= hoursBalance.cycleStart)
+          .filter(v => v.building === config.buildingName && v.date >= cycleStart && v.date <= cycleEnd)
           .reduce((sum, v) => sum + v.materialCost, 0),
       }
     })

@@ -10,10 +10,10 @@ interface WorkDetailProps {
 }
 
 const PHOTO_LABELS: Record<string, string> = {
-  common: 'Área común', exterior: 'Exterior', windows: 'Ventanas',
-  wallCeiling: 'Pared/Techo', bath: 'Baño', kitchen: 'Cocina',
-  floor: 'Piso', electrical: 'Eléctrico', plumbing: 'Plomería',
-  hvac: 'HVAC', extra: 'Extra', before: 'Antes', after: 'Después',
+  common: 'Common Area', exterior: 'Exterior', windows: 'Windows',
+  wallCeiling: 'Wall/Ceiling', bath: 'Bathroom', kitchen: 'Kitchen',
+  floor: 'Floor', electrical: 'Electrical', plumbing: 'Plumbing',
+  hvac: 'HVAC', extra: 'Extra', before: 'Before', after: 'After',
 }
 
 function PhotoLink({ url, label }: { url: string | null; label: string }) {
@@ -74,13 +74,13 @@ export function WorkDetail({ visit }: WorkDetailProps) {
         <div className="px-4 pb-4 border-t border-slate-700 pt-4 space-y-4">
           {visit.problem && (
             <div>
-              <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Problema</p>
+              <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Problem</p>
               <p className="text-slate-200 text-sm bg-slate-900 rounded-lg p-3">{visit.problem}</p>
             </div>
           )}
           {visit.workPerformed && (
             <div>
-              <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Trabajo realizado</p>
+              <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Work Performed</p>
               <p className="text-slate-200 text-sm bg-slate-900 rounded-lg p-3 whitespace-pre-line">
                 {visit.workPerformed}
               </p>
@@ -88,7 +88,7 @@ export function WorkDetail({ visit }: WorkDetailProps) {
           )}
           {photoEntries.length > 0 && (
             <div>
-              <p className="text-slate-400 text-xs uppercase tracking-wide mb-2">Fotos</p>
+              <p className="text-slate-400 text-xs uppercase tracking-wide mb-2">Photos</p>
               <div className="flex flex-wrap gap-2">
                 {photoEntries.map(([key, url]) => (
                   <PhotoLink key={key} url={url} label={key} />

@@ -3,64 +3,92 @@ import { getBuildingConfigs } from '@/lib/sheets/building-config'
 import { getAllVisits } from '@/lib/sheets/all-visits'
 import { getUnitsSummary } from '@/lib/sheets/units-summary'
 import { getPendingApprovalCount } from '@/lib/sheets/review-log'
-import { getCurrentCycleLabel, calculateHoursBalance } from '@/lib/hours'
+import { getClientPlans } from '@/lib/sheets/client-plans'
+import { getCycleBalances } from '@/lib/sheets/cycle-balances'
+import {
+  getCurrentCycleLabel,
+  getCycleDates,
+  calculateClientHoursBalance,
+  getHoursUsedInBuilding,
+  formatCycleRange,
+} from '@/lib/hours'
 import { KPIRow } from '@/components/admin/KPIRow'
 import { BuildingCard } from '@/components/admin/BuildingCard'
 import { RecentWorkTable } from '@/components/admin/RecentWorkTable'
+import { HoursBar } from '@/components/shared/HoursBar'
 import type { BuildingStats } from '@/types'
+
+const CYCLE_DAY_START = 25
 
 export default async function AdminOverviewPage() {
   const session = await auth()
 
-  const configs = await getBuildingConfigs()
+  const [configs, allVisits, clientPlans] = await Promise.all([
+    getBuildingConfigs(),
+    getAllVisits(),
+    getClientPlans(),
+  ])
+
   const allowedConfigs = session?.user.role === 'admin'
     ? configs
     : configs.filter(c => (session?.user.buildings ?? []).includes(c.buildingName))
 
-  const allVisits = await getAllVisits()
+  const cycleLabel = getCurrentCycleLabel(CYCLE_DAY_START)
+  const { start: cycleStart, end: cycleEnd } = getCycleDates(CYCLE_DAY_START, cycleLabel)
+
+  const activePlan = clientPlans[0] ?? null
+  const closedCycles = activePlan ? await getCycleBalances(activePlan.clientId) : []
+  const clientBalance = activePlan
+    ? calculateClientHoursBalance(allVisits, activePlan, closedCycles, cycleLabel)
+    : null
 
   const buildings: BuildingStats[] = await Promise.all(
     allowedConfigs.map(async config => {
-      const units = await getUnitsSummary(config.buildingName)
-      const pending = await getPendingApprovalCount(config.buildingName)
-      const cycleLabel = getCurrentCycleLabel(config)
-      const hoursBalance = calculateHoursBalance(allVisits, config, cycleLabel)
+      const [units, pending] = await Promise.all([
+        getUnitsSummary(config.buildingName),
+        getPendingApprovalCount(config.buildingName),
+      ])
+      const hoursUsedThisCycle = getHoursUsedInBuilding(allVisits, config.buildingName, cycleStart, cycleEnd)
 
       return {
         name: config.buildingName,
         config,
         units,
         pendingApprovals: pending,
-        hoursBalance,
+        hoursUsedThisCycle,
         materialsThisCycle: allVisits
-          .filter(v => v.building === config.buildingName && v.date >= hoursBalance.cycleStart)
+          .filter(v => v.building === config.buildingName && v.date >= cycleStart && v.date <= cycleEnd)
           .reduce((sum, v) => sum + v.materialCost, 0),
       }
     })
   )
 
-  // Recent visits: last 15 across allowed buildings
   const recentVisits = allVisits
     .filter(v => session?.user.role === 'admin' || (session?.user.buildings ?? []).includes(v.building))
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 15)
 
   const totalPending = buildings.reduce((s, b) => s + b.pendingApprovals, 0)
-  const totalHours = buildings.reduce((s, b) => s + b.hoursBalance.usedHours, 0)
+  const cycleRange = formatCycleRange(cycleStart, cycleEnd)
 
   const kpis = [
-    { label: 'Edificios activos', value: buildings.length, sub: 'GTA' },
-    { label: 'Horas este ciclo', value: `${Math.round(totalHours * 10) / 10}h`, sub: 'Acumulado' },
+    { label: 'Active Buildings', value: buildings.length, sub: 'Under management' },
     {
-      label: 'Aprobaciones pendientes',
-      value: totalPending,
-      sub: totalPending > 0 ? 'Requieren revisión' : 'Al día ✓',
-      alert: totalPending > 0,
+      label: 'Hours This Cycle',
+      value: clientBalance ? `${clientBalance.usedHours.toFixed(1)}h` : '—',
+      sub: clientBalance ? `of ${clientBalance.availableHours.toFixed(1)}h available` : '',
     },
     {
-      label: 'Sin pendientes',
+      label: 'Pending Approvals',
+      value: totalPending,
+      sub: totalPending > 0 ? 'Need review' : 'All up to date ✓',
+      alert: totalPending > 0,
+      href: totalPending > 0 ? '/approvals' : undefined,
+    },
+    {
+      label: 'Up to Date',
       value: buildings.filter(b => b.pendingApprovals === 0).length,
-      sub: 'Edificios al día',
+      sub: 'Buildings with no pending',
     },
   ]
 
@@ -68,16 +96,41 @@ export default async function AdminOverviewPage() {
     <div>
       <div className="mb-6">
         <h1 className="text-white text-2xl font-bold">Dashboard</h1>
-        <p className="text-slate-400 text-sm mt-1">Vista general de todos los edificios</p>
+        <p className="text-slate-400 text-sm mt-1">All buildings overview</p>
       </div>
+
       <KPIRow tiles={kpis} />
-      <h2 className="text-slate-300 text-sm font-semibold uppercase tracking-wide mb-3">Edificios</h2>
+
+      {clientBalance && (
+        <div className="bg-slate-800 rounded-xl p-5 mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-white font-semibold text-sm">Service Plan — {activePlan!.clientName}</h2>
+              <p className="text-slate-500 text-xs">{cycleRange}</p>
+            </div>
+            {clientBalance.extraHours > 0 && (
+              <span className="text-red-400 text-xs font-semibold bg-red-900/30 px-3 py-1 rounded-full">
+                {clientBalance.extraHours.toFixed(1)}h over — ${(clientBalance.extraHours * 75).toFixed(2)} extra
+              </span>
+            )}
+          </div>
+          <HoursBar
+            used={clientBalance.usedHours}
+            plan={clientBalance.planHours}
+            rollover={clientBalance.rolledOverHours}
+            showWarning
+          />
+        </div>
+      )}
+
+      <h2 className="text-slate-300 text-sm font-semibold uppercase tracking-wide mb-3">Buildings</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {buildings.map((b, i) => (
-          <BuildingCard key={b.name} stats={b} index={i} />
+          <BuildingCard key={b.name} stats={b} index={i} cycleStart={cycleStart} cycleEnd={cycleEnd} />
         ))}
       </div>
-      <h2 className="text-slate-300 text-sm font-semibold uppercase tracking-wide mb-3">Últimos trabajos</h2>
+
+      <h2 className="text-slate-300 text-sm font-semibold uppercase tracking-wide mb-3">Recent Work</h2>
       <RecentWorkTable visits={recentVisits} />
     </div>
   )

@@ -20,7 +20,7 @@ export default async function BuildingPage({
       </div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-white text-xl font-bold">{buildingName}</h1>
-        <span className="text-slate-400 text-sm">{units.length} áreas registradas</span>
+        <span className="text-slate-400 text-sm">{units.length} registered areas</span>
       </div>
       <UnitList units={units} building={buildingName} />
     </div>
