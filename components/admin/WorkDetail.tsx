@@ -33,7 +33,7 @@ function PhotoLink({ url, label }: { url: string | null; label: string }) {
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-col items-center gap-1 bg-slate-700 hover:bg-slate-600 rounded-lg p-3 text-xs text-slate-300 transition-colors"
+            className="flex flex-col items-center gap-1 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg p-3 text-xs text-slate-600 transition-colors"
           >
             <span className="text-2xl">📷</span>
             <span>{displayLabel}{urls.length > 1 ? ` ${i + 1}` : ''}</span>
@@ -50,45 +50,45 @@ export function WorkDetail({ visit }: WorkDetailProps) {
   const photoEntries = Object.entries(visit.photos).filter(([, v]) => v !== null && v !== '')
 
   return (
-    <div className="bg-slate-800 rounded-xl border border-slate-700">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-4 text-left"
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors rounded-xl"
       >
         <div className="flex items-center gap-3">
-          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${visit.status === 'Completed' ? 'bg-green-400' : 'bg-amber-400'}`} />
+          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${visit.status === 'Completed' ? 'bg-green-500' : 'bg-amber-400'}`} />
           <div>
-            <p className="text-white text-sm font-medium">{visit.visitType} — {visit.areaName}</p>
+            <p className="text-slate-900 text-sm font-semibold">{visit.visitType} — {visit.areaName}</p>
             <p className="text-slate-400 text-xs">{formatDate(visit.date)} · {visit.duration.toFixed(1)}h · {visit.technician}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           {visit.materialCost > 0 && (
-            <span className="text-green-400 text-sm font-medium">${visit.materialCost.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="text-green-600 text-sm font-semibold">${visit.materialCost.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           )}
-          <span className="text-slate-400 text-lg">{open ? '∧' : '∨'}</span>
+          <span className="text-slate-400 text-sm">{open ? '∧' : '∨'}</span>
         </div>
       </button>
 
       {open && (
-        <div className="px-4 pb-4 border-t border-slate-700 pt-4 space-y-4">
+        <div className="px-5 pb-5 border-t border-gray-100 pt-4 space-y-4">
           {visit.problem && (
             <div>
-              <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Problem</p>
-              <p className="text-slate-200 text-sm bg-slate-900 rounded-lg p-3">{visit.problem}</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Problem</p>
+              <p className="text-slate-700 text-sm bg-gray-50 rounded-lg p-3 border border-gray-100">{visit.problem}</p>
             </div>
           )}
           {visit.workPerformed && (
             <div>
-              <p className="text-slate-400 text-xs uppercase tracking-wide mb-1">Work Performed</p>
-              <p className="text-slate-200 text-sm bg-slate-900 rounded-lg p-3 whitespace-pre-line">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Work Performed</p>
+              <p className="text-slate-700 text-sm bg-gray-50 rounded-lg p-3 border border-gray-100 whitespace-pre-line">
                 {visit.workPerformed}
               </p>
             </div>
           )}
           {photoEntries.length > 0 && (
             <div>
-              <p className="text-slate-400 text-xs uppercase tracking-wide mb-2">Photos</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Photos</p>
               <div className="flex flex-wrap gap-2">
                 {photoEntries.map(([key, url]) => (
                   <PhotoLink key={key} url={url} label={key} />
