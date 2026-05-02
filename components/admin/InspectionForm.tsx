@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { actionSubmitInspection } from '@/app/(admin)/inspect/actions'
+import { PhotoUpload } from '@/components/shared/PhotoUpload'
 import type { InspectionRequest } from '@/lib/sheets/inspection-requests'
 import type { UnitSummary } from '@/types'
 
@@ -11,6 +12,7 @@ type CategoryStatus = 'OK' | 'Minor' | 'Urgent'
 interface CategoryState {
   status: CategoryStatus
   notes: string
+  photoUrl?: string
 }
 
 const CATEGORIES: { key: CategoryKey; label: string; icon: string; hint: string }[] = [
@@ -39,7 +41,7 @@ interface Props {
 
 export function InspectionForm({ request, unit }: Props) {
   const [step, setStep] = useState(0)
-  const [visitType, setVisitType] = useState<'Inspection' | 'Repair'>('Inspection')
+  const visitType = 'Inspection'
   const [tenantPresent, setTenantPresent] = useState(false)
   const [tenantName, setTenantName] = useState('')
   const [categories, setCategories] = useState<Record<CategoryKey, CategoryState>>(blankCategories)
@@ -140,23 +142,6 @@ export function InspectionForm({ request, unit }: Props) {
               <p className="text-slate-500 text-sm mb-5">Basic details for this inspection</p>
 
               <div className="flex flex-col gap-4">
-                <div>
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-1.5">Visit type</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {(['Inspection', 'Repair'] as const).map(t => (
-                      <button key={t} onClick={() => setVisitType(t)}
-                        className={`py-2.5 rounded-lg text-sm font-semibold border transition-colors ${
-                          visitType === t
-                            ? 'bg-indigo-600 border-indigo-600 text-white'
-                            : 'bg-gray-50 border border-gray-200 text-slate-600 hover:border-gray-300'
-                        }`}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 <div>
                   <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-1.5">Tenant present</label>
                   <div className="grid grid-cols-2 gap-2">
@@ -263,10 +248,15 @@ export function InspectionForm({ request, unit }: Props) {
                       rows={3}
                       className="w-full bg-white border border-gray-200 text-slate-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none placeholder:text-slate-400"
                     />
-                    <label className="mt-3 flex flex-col items-center justify-center h-12 rounded-lg border-2 border-dashed border-gray-300 text-slate-400 hover:border-indigo-400 hover:text-indigo-500 cursor-pointer transition-colors">
-                      <input type="file" accept="image/*" capture="environment" className="hidden" />
-                      <span className="text-xs">📷 Add photo</span>
-                    </label>
+                    <div className="mt-3">
+                      <PhotoUpload
+                        label={cat.key}
+                        folderPath={`Inspections/${request.requestId}`}
+                        value={categories[cat.key].photoUrl ?? ''}
+                        onUploaded={url => setCategory(cat.key, { photoUrl: url })}
+                        onClear={() => setCategory(cat.key, { photoUrl: '' })}
+                      />
+                    </div>
                   </div>
                 )}
 

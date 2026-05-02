@@ -3,6 +3,7 @@ import { getBuildingConfigs } from '@/lib/sheets/building-config'
 import { getAllVisits } from '@/lib/sheets/all-visits'
 import { getUnitsSummary } from '@/lib/sheets/units-summary'
 import { getPendingApprovalCount } from '@/lib/sheets/review-log'
+import { getReportedWorkOrderCount } from '@/lib/sheets/work-orders'
 import { getPendingInspectionCount } from '@/lib/sheets/inspection-requests'
 import { getClientPlans } from '@/lib/sheets/client-plans'
 import { getCycleBalances } from '@/lib/sheets/cycle-balances'
@@ -47,10 +48,12 @@ export default async function AdminOverviewPage() {
 
   const buildings: BuildingStats[] = await Promise.all(
     allowedConfigs.map(async config => {
-      const [units, pending] = await Promise.all([
+      const [units, reviewPending, reportedWOs] = await Promise.all([
         getUnitsSummary(config.buildingName),
         getPendingApprovalCount(config.buildingName, cycleLabel),
+        getReportedWorkOrderCount(config.buildingName),
       ])
+      const pending = reviewPending + reportedWOs
       const hoursUsedThisCycle = getHoursUsedInBuilding(allVisits, config.buildingName, cycleStart, cycleEnd)
 
       return {
@@ -69,7 +72,7 @@ export default async function AdminOverviewPage() {
   const recentVisits = allVisits
     .filter(v => session?.user.role === 'admin' || (session?.user.buildings ?? []).includes(v.building))
     .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 15)
+    .slice(0, 200)
 
   const totalPending = buildings.reduce((s, b) => s + b.pendingApprovals, 0)
   const cycleRange = formatCycleRange(cycleStart, cycleEnd)

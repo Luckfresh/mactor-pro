@@ -168,6 +168,8 @@ export interface WorkOrder {
   materialCost: number
   cycleLabel: string
   notes: string
+  photoBeforeUrl: string
+  photoAfterUrl: string
 }
 
 export type TenantReportStatus = 'Pending' | 'Approved' | 'Rejected' | 'Quoted' | 'Resolved'

@@ -40,10 +40,10 @@ export async function actionCreateWorkOrder(formData: FormData) {
   redirect('/work-orders')
 }
 
-export async function actionClaimWorkOrder(id: string) {
+export async function actionClaimWorkOrder(id: string, photoBeforeUrl?: string) {
   const session = await auth()
   if (!session || session.user.role !== 'admin') throw new Error('Unauthorized')
-  await claimWorkOrder(id, session.user.name ?? session.user.email ?? 'unknown')
+  await claimWorkOrder(id, session.user.name ?? session.user.email ?? 'unknown', photoBeforeUrl)
   revalidatePath('/work-orders')
 }
 
@@ -58,7 +58,8 @@ export async function actionCompleteWorkOrder(
   id: string,
   duration: number,
   materialCost: number,
-  notes: string
+  notes: string,
+  photoAfterUrl?: string,
 ) {
   const session = await auth()
   if (!session || session.user.role !== 'admin') throw new Error('Unauthorized')
@@ -67,7 +68,8 @@ export async function actionCompleteWorkOrder(
     session.user.name ?? session.user.email ?? 'unknown',
     duration,
     materialCost,
-    notes
+    notes,
+    photoAfterUrl,
   )
   revalidatePath('/work-orders')
   revalidatePath('/')

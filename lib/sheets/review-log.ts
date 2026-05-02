@@ -87,6 +87,42 @@ export async function approveReviewEntry(
   })
 }
 
+export async function createReviewEntry(data: {
+  visitKey: string
+  date: string
+  technician: string
+  building: string
+  unitId: string
+  areaName: string
+  visitType: string
+  workPerformed: string
+  duration: number
+  cycleLabel: string
+}): Promise<void> {
+  const sheets = await getSheetsClient()
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: getSpreadsheetId(),
+    range: `${SHEET}!A:N`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: {
+      values: [[
+        data.visitKey,
+        data.date,
+        data.technician,
+        data.building,
+        data.unitId,
+        data.areaName,
+        data.visitType,
+        data.workPerformed,
+        data.duration,
+        'FALSE',
+        '', '', '',
+        data.cycleLabel,
+      ]],
+    },
+  })
+}
+
 export async function getPendingApprovalCount(building?: string, cycleLabel?: string): Promise<number> {
   const sheets = await getSheetsClient()
   const res = await sheets.spreadsheets.values.get({

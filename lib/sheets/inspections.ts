@@ -38,6 +38,57 @@ export interface InspectionData {
   urgentIssues: number
 }
 
+export interface InspectionRecord {
+  id: string
+  date: string
+  building: string
+  unitId: string
+  areaName: string
+  areaType: string
+  technician: string
+  cycleLabel: string
+  totalIssues: number
+  urgentIssues: number
+}
+
+function rowToRecord(row: unknown[]): InspectionRecord {
+  return {
+    id: String(row[0] ?? '').trim(),
+    date: String(row[1] ?? '').trim(),
+    building: String(row[2] ?? '').trim(),
+    unitId: String(row[3] ?? '').trim(),
+    areaName: String(row[4] ?? '').trim(),
+    areaType: String(row[5] ?? '').trim(),
+    technician: String(row[9] ?? '').trim(),
+    cycleLabel: String(row[10] ?? '').trim(),
+    totalIssues: parseInt(String(row[33] ?? '0')) || 0,
+    urgentIssues: parseInt(String(row[34] ?? '0')) || 0,
+  }
+}
+
+export async function getInspections(filters?: {
+  building?: string
+  limit?: number
+}): Promise<InspectionRecord[]> {
+  try {
+    const sheets = await getSheetsClient()
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: getSpreadsheetId(),
+      range: `${SHEET}!A2:AI`,
+    })
+    const rows = res.data.values ?? []
+    let records = rows
+      .filter(row => row.length >= 2 && row[0])
+      .map(rowToRecord)
+      .filter(r => !filters?.building || r.building === filters.building)
+      .sort((a, b) => b.date.localeCompare(a.date))
+    if (filters?.limit) records = records.slice(0, filters.limit)
+    return records
+  } catch {
+    return []
+  }
+}
+
 export async function createInspection(data: InspectionData): Promise<void> {
   const sheets = await getSheetsClient()
   const id = `INS-${Date.now()}`

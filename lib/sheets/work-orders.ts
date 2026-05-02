@@ -7,7 +7,7 @@ const ALL_VISITS = 'All_Visits'
 // Columns: workOrderId(A) createdAt(B) building(C) unitId(D) areaName(E)
 //          description(F) priority(G) createdBy(H) status(I) claimedBy(J)
 //          claimedAt(K) startedAt(L) completedAt(M) duration(N) materialCost(O)
-//          cycleLabel(P) notes(Q)
+//          cycleLabel(P) notes(Q) photoBeforeUrl(R) photoAfterUrl(S)
 
 function rowToWorkOrder(row: unknown[]): WorkOrder {
   return {
@@ -28,6 +28,8 @@ function rowToWorkOrder(row: unknown[]): WorkOrder {
     materialCost: toNumber(row[14]),
     cycleLabel: String(row[15] ?? '').trim(),
     notes: String(row[16] ?? '').trim(),
+    photoBeforeUrl: String(row[17] ?? '').trim(),
+    photoAfterUrl: String(row[18] ?? '').trim(),
   }
 }
 
@@ -82,6 +84,20 @@ export async function createWorkOrder(data: {
   return id
 }
 
+export async function getReportedWorkOrderCount(building?: string): Promise<number> {
+  const sheets = await getSheetsClient()
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: getSpreadsheetId(),
+    range: `${SHEET}!A2:I`,
+  })
+  const rows = res.data.values ?? []
+  return rows.filter(row => {
+    if (!row[0]) return false
+    if (building && String(row[2] ?? '').trim() !== building) return false
+    return String(row[8] ?? '').trim() === 'Reported'
+  }).length
+}
+
 async function findWorkOrderRow(id: string): Promise<{ row: unknown[]; sheetRow: number }> {
   const sheets = await getSheetsClient()
   const res = await sheets.spreadsheets.values.get({
@@ -94,17 +110,27 @@ async function findWorkOrderRow(id: string): Promise<{ row: unknown[]; sheetRow:
   return { row: rows[rowIdx], sheetRow: rowIdx + 2 }
 }
 
-export async function claimWorkOrder(id: string, by: string): Promise<void> {
+export async function claimWorkOrder(id: string, by: string, photoBeforeUrl?: string): Promise<void> {
   const sheets = await getSheetsClient()
   const { sheetRow } = await findWorkOrderRow(id)
   const today = new Date().toISOString().split('T')[0]
+  const spreadsheetId = getSpreadsheetId()
 
   await sheets.spreadsheets.values.update({
-    spreadsheetId: getSpreadsheetId(),
+    spreadsheetId,
     range: `${SHEET}!I${sheetRow}:K${sheetRow}`,
     valueInputOption: 'USER_ENTERED',
     requestBody: { values: [['Claimed', by, today]] },
   })
+
+  if (photoBeforeUrl) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${SHEET}!R${sheetRow}`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [[photoBeforeUrl]] },
+    })
+  }
 }
 
 export async function startWorkOrder(id: string): Promise<void> {
@@ -133,7 +159,8 @@ export async function completeWorkOrder(
   by: string,
   duration: number,
   materialCost: number,
-  notes: string
+  notes: string,
+  photoAfterUrl?: string,
 ): Promise<void> {
   const sheets = await getSheetsClient()
   const spreadsheetId = getSpreadsheetId()
@@ -158,6 +185,15 @@ export async function completeWorkOrder(
       ]],
     },
   })
+
+  if (photoAfterUrl) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${SHEET}!S${sheetRow}`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [[photoAfterUrl]] },
+    })
+  }
 
   // Write to All_Visits
   const emptyPhotos = Array(13).fill('')
