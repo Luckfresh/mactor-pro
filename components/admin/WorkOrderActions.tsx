@@ -40,7 +40,7 @@ export function WorkOrderActions({ id, status, role }: Props) {
             onChange={e => setRejectReason(e.target.value)}
             placeholder="Reason for rejection (required)"
             rows={2}
-            className="text-xs bg-slate-700 text-white rounded px-2 py-1 border border-slate-600 focus:outline-none focus:border-slate-400 resize-none"
+            className="bg-white border border-gray-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
           />
           <div className="flex gap-2">
             <button
@@ -49,11 +49,11 @@ export function WorkOrderActions({ id, status, role }: Props) {
                 await actionRejectWorkOrder(id, rejectReason)
                 setLocalStatus('Rejected')
               })}
-              className="text-xs px-3 py-1 rounded bg-red-700 text-white font-semibold disabled:opacity-40"
+              className="bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
             >
               {isPending ? '...' : 'Confirm Reject'}
             </button>
-            <button onClick={() => setRejecting(false)} className="text-xs text-slate-400 hover:text-white">Cancel</button>
+            <button onClick={() => setRejecting(false)} className="text-slate-500 hover:text-slate-700 text-xs">Cancel</button>
           </div>
         </div>
       )
@@ -66,13 +66,13 @@ export function WorkOrderActions({ id, status, role }: Props) {
             await actionApproveWorkOrder(id)
             setLocalStatus('Pending')
           })}
-          className="text-xs px-3 py-1 rounded bg-green-700/40 text-green-300 hover:bg-green-700/70 transition-colors disabled:opacity-40"
+          className="bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
         >
           {isPending ? '...' : 'Approve'}
         </button>
         <button
           onClick={() => setRejecting(true)}
-          className="text-xs px-3 py-1 rounded bg-red-900/40 text-red-300 hover:bg-red-900/70 transition-colors"
+          className="bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
         >
           Reject
         </button>
@@ -81,11 +81,11 @@ export function WorkOrderActions({ id, status, role }: Props) {
   }
 
   if (localStatus === 'Rejected') {
-    return <span className="text-red-400 text-xs font-semibold">✗ Rejected</span>
+    return <span className="text-red-600 text-xs font-semibold">✗ Rejected</span>
   }
 
   if (localStatus === 'Completed') {
-    return <span className="text-green-400 text-xs font-semibold">✓ Done</span>
+    return <span className="text-green-600 text-xs font-semibold">✓ Done</span>
   }
 
   if (role !== 'admin') return null
@@ -98,7 +98,7 @@ export function WorkOrderActions({ id, status, role }: Props) {
           await actionClaimWorkOrder(id)
           setLocalStatus('Claimed')
         })}
-        className="text-xs px-3 py-1 rounded bg-sky-700/40 text-sky-300 hover:bg-sky-700/70 transition-colors disabled:opacity-40"
+        className="bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
       >
         {isPending ? '...' : 'Claim'}
       </button>
@@ -113,7 +113,7 @@ export function WorkOrderActions({ id, status, role }: Props) {
           await actionStartWorkOrder(id)
           setLocalStatus('In Progress')
         })}
-        className="text-xs px-3 py-1 rounded bg-amber-700/40 text-amber-300 hover:bg-amber-700/70 transition-colors disabled:opacity-40"
+        className="bg-sky-50 border border-sky-200 text-sky-700 hover:bg-sky-100 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
       >
         {isPending ? '...' : 'Start'}
       </button>
@@ -125,7 +125,7 @@ export function WorkOrderActions({ id, status, role }: Props) {
       return (
         <button
           onClick={() => setCompleting(true)}
-          className="text-xs px-3 py-1 rounded bg-green-700/40 text-green-300 hover:bg-green-700/70 transition-colors"
+          className="bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
         >
           Complete
         </button>
@@ -139,20 +139,20 @@ export function WorkOrderActions({ id, status, role }: Props) {
             type="number" min="0.1" step="0.1"
             value={duration} onChange={e => setDuration(e.target.value)}
             placeholder="Hours"
-            className="w-16 text-xs bg-slate-700 text-white rounded px-2 py-1 border border-slate-600 focus:outline-none focus:border-slate-400"
+            className="w-16 bg-white border border-gray-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
           <input
             type="number" min="0" step="0.01"
             value={materialCost} onChange={e => setMaterialCost(e.target.value)}
             placeholder="$ Materials"
-            className="w-24 text-xs bg-slate-700 text-white rounded px-2 py-1 border border-slate-600 focus:outline-none focus:border-slate-400"
+            className="w-24 bg-white border border-gray-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>
         <textarea
           value={notes} onChange={e => setNotes(e.target.value)}
           placeholder="Work performed (optional)"
           rows={2}
-          className="text-xs bg-slate-700 text-white rounded px-2 py-1 border border-slate-600 focus:outline-none focus:border-slate-400 resize-none w-full"
+          className="bg-white border border-gray-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none w-full"
         />
         <div className="flex gap-2">
           <button
@@ -162,11 +162,11 @@ export function WorkOrderActions({ id, status, role }: Props) {
               setLocalStatus('Completed')
               setCompleting(false)
             })}
-            className="text-xs px-3 py-1 rounded bg-green-700 text-white font-semibold disabled:opacity-40"
+            className="bg-indigo-600 text-white font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-indigo-700 disabled:opacity-40 transition-colors"
           >
             {isPending ? '...' : 'Submit'}
           </button>
-          <button onClick={() => setCompleting(false)} className="text-xs text-slate-400 hover:text-white">Cancel</button>
+          <button onClick={() => setCompleting(false)} className="text-slate-500 hover:text-slate-700 text-xs">Cancel</button>
         </div>
       </div>
     )
