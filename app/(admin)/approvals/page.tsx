@@ -34,7 +34,7 @@ export default async function ApprovalsPage() {
             <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Pending Review — {cycleLabel}</h2>
           </div>
           {pending.map((entry, i) => (
-            <div key={entry.visitKey ?? i} className="px-5 py-4 border-b border-gray-100 last:border-0">
+            <div key={entry.visitKey} className="px-5 py-4 border-b border-gray-100 last:border-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
