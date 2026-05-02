@@ -38,7 +38,7 @@ export function RecentWorkTable({ visits }: RecentWorkTableProps) {
 
         return (
           <Link
-            key={i}
+            key={`${v.date}-${v.building}-${v.unitId}-${i}`}
             href={`/buildings/${buildingSlug}/units/${unitSlug}`}
             className="grid grid-cols-[90px_76px_1fr_130px_64px_88px_88px] gap-2 px-5 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors"
           >

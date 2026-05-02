@@ -10,20 +10,20 @@ const ACCENT: Record<number, string> = {
 interface BuildingCardProps {
   stats: BuildingStats
   index: number
-  cycleStart: string
-  cycleEnd: string
 }
 
-export function BuildingCard({ stats, index, cycleStart, cycleEnd }: BuildingCardProps) {
+export function BuildingCard({ stats, index }: BuildingCardProps) {
   const slug = encodeURIComponent(stats.name)
-  const shortName = stats.name.replace('PHASE I ', '').replace('PHASE II ', '').replace('PHASE III ', '')
+  const shortName = stats.name.replace(/^PHASE (I{1,3}|IV) /i, '')
+  const parts = stats.name.split(' ')
+  const prefix = parts.length >= 2 ? `${parts[0]} ${parts[1]}` : parts[0]
 
   return (
     <Link href={`/buildings/${slug}`} className="block group">
       <div className={`bg-white rounded-xl border border-gray-200 shadow-sm border-l-4 ${ACCENT[index % 3]} hover:shadow-md hover:border-gray-300 transition-all`}>
         <div className="p-5 border-b border-gray-100">
           <h3 className="text-slate-900 font-bold text-sm">{shortName}</h3>
-          <p className="text-slate-500 text-xs mt-0.5">{stats.name.split(' ')[0]} {stats.name.split(' ')[1]} · {stats.units.length} units</p>
+          <p className="text-slate-500 text-xs mt-0.5">{prefix} · {stats.units.length} units</p>
         </div>
         <div className="p-5 grid grid-cols-2 gap-y-3">
           <div>

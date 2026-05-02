@@ -131,7 +131,7 @@ export default async function AdminOverviewPage() {
       <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Buildings</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {buildings.map((b, i) => (
-          <BuildingCard key={b.name} stats={b} index={i} cycleStart={cycleStart} cycleEnd={cycleEnd} />
+          <BuildingCard key={b.name} stats={b} index={i} />
         ))}
       </div>
 

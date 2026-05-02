@@ -16,7 +16,7 @@ interface KPIRowProps {
 export function KPIRow({ tiles }: KPIRowProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      {tiles.map(tile => {
+      {tiles.map((tile, i) => {
         const borderAccent = tile.alert
           ? 'border-l-4 border-l-indigo-500'
           : tile.warn
@@ -42,11 +42,11 @@ export function KPIRow({ tiles }: KPIRowProps) {
           </div>
         )
         return tile.href ? (
-          <Link key={tile.label} href={tile.href} className="block">
+          <Link key={`${tile.label}-${i}`} href={tile.href} className="block">
             {inner}
           </Link>
         ) : (
-          <div key={tile.label}>{inner}</div>
+          <div key={`${tile.label}-${i}`}>{inner}</div>
         )
       })}
     </div>
