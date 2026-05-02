@@ -17,12 +17,15 @@ export function NavBar({ userName, role }: NavBarProps) {
     { href: '/approvals', label: 'Approvals' },
     { href: '/work-orders', label: 'Work Orders' },
     { href: '/inspect', label: 'Inspect' },
+    { href: '/tenants', label: 'Tenants' },
+    { href: '/qr-codes', label: 'QR Codes' },
   ]
 
   const managerLinks = [
     { href: '/', label: 'Overview' },
     { href: '/approvals', label: 'Approvals' },
     { href: '/work-orders', label: 'Work Orders' },
+    { href: '/tenants', label: 'Tenants' },
   ]
 
   const links = role === 'admin' ? adminLinks : managerLinks

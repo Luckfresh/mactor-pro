@@ -170,6 +170,26 @@ export interface WorkOrder {
   notes: string
 }
 
+export type TenantReportStatus = 'Pending' | 'Approved' | 'Rejected' | 'Quoted' | 'Resolved'
+
+export interface TenantReport {
+  reportId: string
+  date: string
+  building: string
+  unitId: string
+  tenantName: string
+  phone: string
+  email: string
+  description: string
+  urgency: string
+  status: TenantReportStatus
+  wantsQuote: boolean
+  serviceType: string
+  quotedAmount: number
+  adminNotes: string
+  resolvedDate: string
+}
+
 export interface BuildingStats {
   name: string
   config: BuildingConfig
