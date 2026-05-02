@@ -27,10 +27,10 @@ export function ApprovalActions({ visitKey }: Props) {
   }
 
   if (done === 'approved') {
-    return <span className="text-green-400 text-xs font-semibold">✓ Approved</span>
+    return <span className="text-green-600 text-xs font-semibold">✓ Approved</span>
   }
   if (done === 'rejected') {
-    return <span className="text-red-400 text-xs font-semibold">✗ Rejected</span>
+    return <span className="text-red-600 text-xs font-semibold">✗ Rejected</span>
   }
 
   if (mode === 'idle') {
@@ -38,13 +38,13 @@ export function ApprovalActions({ visitKey }: Props) {
       <div className="flex gap-2">
         <button
           onClick={() => setMode('approve')}
-          className="text-xs px-2 py-1 rounded bg-green-700/40 text-green-300 hover:bg-green-700/70 transition-colors"
+          className="bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 font-semibold text-sm px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
         >
           Approve
         </button>
         <button
           onClick={() => setMode('reject')}
-          className="text-xs px-2 py-1 rounded bg-red-900/40 text-red-300 hover:bg-red-900/70 transition-colors"
+          className="bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 font-semibold text-sm px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
         >
           Reject
         </button>
@@ -60,23 +60,23 @@ export function ApprovalActions({ visitKey }: Props) {
         onChange={e => setComments(e.target.value)}
         placeholder={mode === 'reject' ? 'Reason for rejection (required)' : 'Comments (optional)'}
         rows={2}
-        className="text-xs bg-slate-700 text-white rounded px-2 py-1 border border-slate-600 focus:outline-none focus:border-slate-400 resize-none w-full"
+        className="bg-white border border-gray-200 text-slate-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-slate-400 w-full resize-none"
       />
       <div className="flex gap-2">
         <button
           disabled={isPending || (mode === 'reject' && !comments.trim())}
           onClick={() => submit(mode)}
-          className={`text-xs px-3 py-1 rounded font-semibold transition-colors disabled:opacity-40 ${
+          className={`font-semibold text-sm px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 ${
             mode === 'approve'
-              ? 'bg-green-700 text-white hover:bg-green-600'
-              : 'bg-red-700 text-white hover:bg-red-600'
+              ? 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'
+              : 'bg-red-600 text-white hover:bg-red-700'
           }`}
         >
           {isPending ? '...' : mode === 'approve' ? 'Confirm Approve' : 'Confirm Reject'}
         </button>
         <button
           onClick={() => { setMode('idle'); setComments('') }}
-          className="text-xs px-2 py-1 rounded text-slate-400 hover:text-white transition-colors"
+          className="text-slate-500 hover:text-slate-700 text-sm"
         >
           Cancel
         </button>
