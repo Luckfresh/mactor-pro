@@ -32,7 +32,7 @@ export default async function InspectionsPage() {
         </div>
         <Link
           href="/inspections/new"
-          className="bg-amber-500 text-slate-900 font-bold px-4 py-2 rounded-lg hover:bg-amber-400 transition-colors"
+          className="bg-indigo-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
         >
           + Request Inspection
         </Link>

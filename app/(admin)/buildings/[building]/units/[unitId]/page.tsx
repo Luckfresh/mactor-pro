@@ -19,35 +19,35 @@ export default async function UnitDetailPage({
 
   return (
     <div>
-      <div className="flex items-center gap-2 text-sm text-slate-400 mb-6">
-        <Link href="/" className="hover:text-white">← Dashboard</Link>
+      <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+        <Link href="/" className="hover:text-slate-700">← Dashboard</Link>
         <span>/</span>
-        <Link href={`/buildings/${encodeURIComponent(building)}`} className="hover:text-white">
+        <Link href={`/buildings/${encodeURIComponent(building)}`} className="hover:text-slate-700">
           {buildingName}
         </Link>
         <span>/</span>
-        <span className="text-white font-medium">{unitName}</span>
+        <span className="text-slate-900 font-medium">{unitName}</span>
       </div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-white text-xl font-bold">{unitName}</h1>
+        <h1 className="text-slate-900 text-xl font-bold">{unitName}</h1>
         <div className="flex gap-6 text-right">
           <div>
-            <p className="text-white font-semibold">{totalHours}h</p>
-            <p className="text-slate-400 text-xs">total hours</p>
+            <p className="text-slate-900 font-semibold">{totalHours}h</p>
+            <p className="text-slate-500 text-xs">total hours</p>
           </div>
           <div>
-            <p className="text-white font-semibold">${totalCost.toLocaleString('en-CA')}</p>
-            <p className="text-slate-400 text-xs">materials</p>
+            <p className="text-slate-900 font-semibold">${totalCost.toLocaleString('en-CA')}</p>
+            <p className="text-slate-500 text-xs">materials</p>
           </div>
           <div>
-            <p className="text-white font-semibold">{visits.length}</p>
-            <p className="text-slate-400 text-xs">visits</p>
+            <p className="text-slate-900 font-semibold">{visits.length}</p>
+            <p className="text-slate-500 text-xs">visits</p>
           </div>
         </div>
       </div>
       <div className="space-y-3">
         {sorted.length === 0 && (
-          <p className="text-slate-400">No work records for this unit.</p>
+          <p className="text-slate-500">No work records for this unit.</p>
         )}
         {sorted.map((v) => (
           <WorkDetail key={`${v.date}-${v.timeIn}-${v.unitId}`} visit={v} />
