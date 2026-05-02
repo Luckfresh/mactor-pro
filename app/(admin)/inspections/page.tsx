@@ -22,9 +22,8 @@ export default async function InspectionsPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <Link href="/" className="text-slate-400 text-sm hover:text-white">← Dashboard</Link>
-          <h1 className="text-white text-2xl font-bold mt-2">Inspections</h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <h1 className="text-slate-900 text-2xl font-bold">Inspections</h1>
+          <p className="text-slate-500 text-sm mt-1">
             {active.filter(r => r.status === 'Pending').length} pending
             {isAdmin && active.some(r => r.status === 'In Progress')
               ? ` · ${active.filter(r => r.status === 'In Progress').length} in progress`
@@ -33,7 +32,7 @@ export default async function InspectionsPage() {
         </div>
         <Link
           href="/inspections/new"
-          className="bg-amber-500 text-slate-900 font-bold text-sm px-4 py-2 rounded-lg hover:bg-amber-400 transition-colors"
+          className="bg-amber-500 text-slate-900 font-bold px-4 py-2 rounded-lg hover:bg-amber-400 transition-colors"
         >
           + Request Inspection
         </Link>
@@ -41,14 +40,14 @@ export default async function InspectionsPage() {
 
       {/* Active requests */}
       {active.length === 0 ? (
-        <div className="bg-slate-800 rounded-xl p-8 text-center mb-6">
-          <p className="text-green-400 font-semibold">All clear ✓</p>
-          <p className="text-slate-400 text-sm mt-1">No pending inspection requests.</p>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-10 text-center mb-6">
+          <p className="text-green-600 font-semibold">All clear ✓</p>
+          <p className="text-slate-500 text-sm mt-1">No pending inspection requests.</p>
         </div>
       ) : (
-        <div className="bg-slate-800 rounded-xl overflow-hidden mb-8">
-          <div className="px-4 py-3 border-b border-slate-700">
-            <h2 className="text-slate-300 text-sm font-semibold uppercase tracking-wide">Pending & In Progress</h2>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-8">
+          <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Pending &amp; In Progress</h2>
           </div>
           {active
             .sort((a, b) => (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9))
@@ -60,19 +59,19 @@ export default async function InspectionsPage() {
 
       {/* History */}
       {history.length > 0 && (
-        <div className="bg-slate-800 rounded-xl overflow-hidden opacity-80">
-          <div className="px-4 py-3 border-b border-slate-700">
-            <h2 className="text-slate-300 text-sm font-semibold uppercase tracking-wide">Recent History</h2>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden opacity-75">
+          <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Recent History</h2>
           </div>
           {history.map(r => (
-            <div key={r.requestId} className="grid grid-cols-[1fr_90px_70px_80px] gap-2 px-4 py-3 border-b border-slate-700/50 last:border-0 items-center">
+            <div key={r.requestId} className="grid grid-cols-[1fr_90px_70px_80px] gap-2 px-5 py-3 border-b border-gray-100 last:border-0 items-center">
               <div>
-                <p className="text-slate-300 text-xs font-medium">{r.areaName || r.unitId}</p>
+                <p className="text-slate-700 text-xs font-medium">{r.areaName || r.unitId}</p>
                 <p className="text-slate-500 text-xs">{r.building.replace('PHASE ', 'P')} · {r.date} · {r.requestedBy}</p>
               </div>
-              <span className="text-slate-400 text-xs">{r.durationHours > 0 ? `${r.durationHours}h` : '—'}</span>
-              <span className="text-slate-400 text-xs">{r.completedBy || '—'}</span>
-              <span className={`text-xs font-medium ${r.status === 'Completed' ? 'text-green-400' : 'text-slate-500'}`}>
+              <span className="text-slate-500 text-xs">{r.durationHours > 0 ? `${r.durationHours}h` : '—'}</span>
+              <span className="text-slate-500 text-xs">{r.completedBy || '—'}</span>
+              <span className={`text-xs font-medium ${r.status === 'Completed' ? 'text-green-600' : 'text-slate-500'}`}>
                 {r.status}
               </span>
             </div>
