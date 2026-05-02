@@ -39,11 +39,11 @@ export default async function AdminOverviewPage() {
     })
   )
 
-  // Recent visits: last 8 visits across allowed buildings
+  // Recent visits: last 15 across allowed buildings
   const recentVisits = allVisits
     .filter(v => session?.user.role === 'admin' || (session?.user.buildings ?? []).includes(v.building))
     .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 8)
+    .slice(0, 15)
 
   const totalPending = buildings.reduce((s, b) => s + b.pendingApprovals, 0)
   const totalHours = buildings.reduce((s, b) => s + b.hoursBalance.usedHours, 0)

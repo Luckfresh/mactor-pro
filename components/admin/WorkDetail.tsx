@@ -3,25 +3,44 @@
 import { useState } from 'react'
 import type { Visit } from '@/types'
 import { PDFDownloadButton } from '@/components/shared/PDFDownloadButton'
+import { formatDate } from '@/lib/hours'
 
 interface WorkDetailProps {
   visit: Visit
 }
 
+const PHOTO_LABELS: Record<string, string> = {
+  common: 'Área común', exterior: 'Exterior', windows: 'Ventanas',
+  wallCeiling: 'Pared/Techo', bath: 'Baño', kitchen: 'Cocina',
+  floor: 'Piso', electrical: 'Eléctrico', plumbing: 'Plomería',
+  hvac: 'HVAC', extra: 'Extra', before: 'Antes', after: 'Después',
+}
+
 function PhotoLink({ url, label }: { url: string | null; label: string }) {
   if (!url) return null
-  const fileId = url.match(/[-\w]{25,}/)?.[0]
-  const href = fileId ? `https://drive.google.com/open?id=${fileId}` : url
+  // Handle multiple URLs separated by ", "
+  const urls = url.split(/,\s*/).filter(u => u.trim().startsWith('http'))
+  if (urls.length === 0) return null
+  const displayLabel = PHOTO_LABELS[label] ?? label
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex flex-col items-center gap-1 bg-slate-700 hover:bg-slate-600 rounded-lg p-3 text-xs text-slate-300 transition-colors"
-    >
-      <span className="text-2xl">📷</span>
-      <span>{label}</span>
-    </a>
+    <>
+      {urls.map((u, i) => {
+        const fileId = u.match(/id=([\w-]+)/)?.[1] ?? u.match(/\/d\/([\w-]+)/)?.[1]
+        const href = fileId ? `https://drive.google.com/open?id=${fileId}` : u.trim()
+        return (
+          <a
+            key={i}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-col items-center gap-1 bg-slate-700 hover:bg-slate-600 rounded-lg p-3 text-xs text-slate-300 transition-colors"
+          >
+            <span className="text-2xl">📷</span>
+            <span>{displayLabel}{urls.length > 1 ? ` ${i + 1}` : ''}</span>
+          </a>
+        )
+      })}
+    </>
   )
 }
 
@@ -40,12 +59,12 @@ export function WorkDetail({ visit }: WorkDetailProps) {
           <span className={`w-2 h-2 rounded-full flex-shrink-0 ${visit.status === 'Completed' ? 'bg-green-400' : 'bg-amber-400'}`} />
           <div>
             <p className="text-white text-sm font-medium">{visit.visitType} — {visit.areaName}</p>
-            <p className="text-slate-400 text-xs">{visit.date} · {visit.duration}h · {visit.technician}</p>
+            <p className="text-slate-400 text-xs">{formatDate(visit.date)} · {visit.duration.toFixed(1)}h · {visit.technician}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           {visit.materialCost > 0 && (
-            <span className="text-white text-sm">${visit.materialCost.toLocaleString('en-CA')}</span>
+            <span className="text-green-400 text-sm font-medium">${visit.materialCost.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           )}
           <span className="text-slate-400 text-lg">{open ? '∧' : '∨'}</span>
         </div>
