@@ -71,6 +71,7 @@ export function WorkOrderActions({ id, status, role }: Props) {
           {isPending ? '...' : 'Approve'}
         </button>
         <button
+          disabled={isPending}
           onClick={() => setRejecting(true)}
           className="bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
         >
