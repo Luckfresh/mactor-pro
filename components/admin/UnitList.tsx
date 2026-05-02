@@ -25,15 +25,15 @@ export function UnitList({ units, building }: UnitListProps) {
 
   return (
     <div>
-      <div className="flex gap-1 bg-slate-800 p-1 rounded-lg w-fit mb-5">
+      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit mb-5">
         {AREA_TYPES.map(type => (
           <button
             key={type}
             onClick={() => setActiveTab(type)}
             className={`text-xs px-4 py-2 rounded-md font-medium transition-colors ${
               activeTab === type
-                ? 'bg-slate-900 text-white'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
             }`}
           >
             {TAB_LABELS[type]}
@@ -41,39 +41,43 @@ export function UnitList({ units, building }: UnitListProps) {
         ))}
       </div>
 
-      <div className="space-y-3">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         {filtered.length === 0 && (
-          <p className="text-slate-400 text-sm">No records in this category.</p>
+          <p className="text-slate-500 text-sm p-6">No records in this category.</p>
         )}
-        {filtered.map(unit => {
+        {filtered.map((unit, i) => {
           const unitSlug = encodeURIComponent(unit.unitId)
           return (
-            <Link key={unit.unitId} href={`/buildings/${buildingSlug}/units/${unitSlug}`}>
-              <div className="bg-slate-800 rounded-xl p-4 flex items-center justify-between hover:bg-slate-800/70 transition-colors border border-slate-700 cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="bg-blue-900/40 text-blue-400 font-bold text-xs px-3 py-1 rounded-md">
-                    {unit.areaName}
-                  </div>
-                  <div>
-                    <p className="text-white text-sm font-medium">{unit.unitId}</p>
-                    <p className="text-slate-400 text-xs">
-                      {unit.totalVisits} visits · Last: {unit.lastVisit || 'No record'}
-                    </p>
-                  </div>
+            <Link
+              key={unit.unitId}
+              href={`/buildings/${buildingSlug}/units/${unitSlug}`}
+              className={`flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors ${
+                i < filtered.length - 1 ? 'border-b border-gray-100' : ''
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="bg-indigo-50 text-indigo-700 font-bold text-xs px-3 py-1.5 rounded-md min-w-[36px] text-center">
+                  {unit.areaName}
                 </div>
-                <div className="flex items-center gap-6 text-right">
-                  <div>
-                    <p className="text-white text-sm font-semibold">{unit.totalHours}h</p>
-                    <p className="text-slate-400 text-xs">total hours</p>
-                  </div>
-                  <div>
-                    <p className="text-white text-sm font-semibold">
-                      ${unit.totalMaterialCost.toLocaleString('en-CA')}
-                    </p>
-                    <p className="text-slate-400 text-xs">materials</p>
-                  </div>
-                  <span className="text-blue-400 text-lg">›</span>
+                <div>
+                  <p className="text-slate-900 text-sm font-medium">{unit.unitId}</p>
+                  <p className="text-slate-400 text-xs">
+                    {unit.totalVisits} visit{unit.totalVisits !== 1 ? 's' : ''} · Last: {unit.lastVisit || 'No record'}
+                  </p>
                 </div>
+              </div>
+              <div className="flex items-center gap-6 text-right">
+                <div>
+                  <p className="text-slate-900 text-sm font-semibold">{unit.totalHours}h</p>
+                  <p className="text-slate-400 text-xs">total hours</p>
+                </div>
+                <div>
+                  <p className="text-slate-900 text-sm font-semibold">
+                    ${unit.totalMaterialCost.toLocaleString('en-CA')}
+                  </p>
+                  <p className="text-slate-400 text-xs">materials</p>
+                </div>
+                <span className="text-slate-400 text-sm">›</span>
               </div>
             </Link>
           )

@@ -1,4 +1,5 @@
 import { getUnitsSummary } from '@/lib/sheets/units-summary'
+import { getAllVisits } from '@/lib/sheets/all-visits'
 import { UnitList } from '@/components/admin/UnitList'
 import Link from 'next/link'
 
@@ -9,7 +10,31 @@ export default async function BuildingPage({
 }) {
   const { building } = await params
   const buildingName = decodeURIComponent(building)
-  const units = await getUnitsSummary(buildingName)
+
+  const [units, visits] = await Promise.all([
+    getUnitsSummary(buildingName),
+    getAllVisits({ building: buildingName }),
+  ])
+
+  // Group visits by unitId
+  const visitsByUnit: Record<string, typeof visits> = {}
+  for (const v of visits) {
+    if (!visitsByUnit[v.unitId]) visitsByUnit[v.unitId] = []
+    visitsByUnit[v.unitId].push(v)
+  }
+
+  // Override summary totals with values computed from real visit records
+  const enrichedUnits = units.map(u => {
+    const uVisits = visitsByUnit[u.unitId] ?? []
+    const sorted = [...uVisits].sort((a, b) => b.date.localeCompare(a.date))
+    return {
+      ...u,
+      totalVisits: uVisits.length,
+      totalHours: Math.round(uVisits.reduce((s, v) => s + v.duration, 0) * 10) / 10,
+      totalMaterialCost: uVisits.reduce((s, v) => s + v.materialCost, 0),
+      lastVisit: sorted[0]?.date ?? u.lastVisit,
+    }
+  })
 
   return (
     <div>
@@ -22,7 +47,7 @@ export default async function BuildingPage({
         <h1 className="text-slate-900 text-xl font-bold">{buildingName}</h1>
         <span className="text-slate-500 text-sm">{units.length} registered areas</span>
       </div>
-      <UnitList units={units} building={buildingName} />
+      <UnitList units={enrichedUnits} building={buildingName} />
     </div>
   )
 }
