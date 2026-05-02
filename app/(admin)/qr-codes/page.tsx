@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { getUnitsSummary } from '@/lib/sheets/units-summary'
 import QRCode from 'qrcode'
 import Link from 'next/link'
+import { PrintButton } from '@/components/admin/PrintButton'
 
 const BASE_URL = 'https://mactor-pro.vercel.app'
 
@@ -39,12 +40,7 @@ export default async function QRCodesPage() {
           <h1 className="text-white text-2xl font-bold mt-2">QR Codes</h1>
           <p className="text-slate-400 text-sm mt-1">One QR per unit — tenants scan to report issues.</p>
         </div>
-        <button
-          onClick={() => { if (typeof window !== 'undefined') window.print() }}
-          className="bg-slate-700 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors"
-        >
-          🖨 Print all
-        </button>
+        <PrintButton />
       </div>
 
       {buildings.map(building => (
