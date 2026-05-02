@@ -8,6 +8,13 @@ interface Props {
   report: TenantReport
 }
 
+const STATUS_COLORS: Record<string, string> = {
+  Approved: 'text-indigo-600',
+  Rejected: 'text-red-600',
+  Quoted:   'text-violet-600',
+  Resolved: 'text-green-600',
+}
+
 export function TenantReportActions({ report }: Props) {
   const [mode, setMode] = useState<'idle' | 'reject' | 'quote'>('idle')
   const [notes, setNotes] = useState('')
@@ -16,29 +23,25 @@ export function TenantReportActions({ report }: Props) {
   const [done, setDone] = useState<string | null>(null)
 
   if (report.status !== 'Pending') {
-    const colors: Record<string, string> = {
-      Approved: 'text-blue-400', Rejected: 'text-red-400',
-      Quoted: 'text-purple-400', Resolved: 'text-green-400',
-    }
-    return <span className={`text-xs font-semibold ${colors[report.status] ?? 'text-slate-400'}`}>{report.status}</span>
+    return <span className={`text-xs font-semibold ${STATUS_COLORS[report.status] ?? 'text-slate-400'}`}>{report.status}</span>
   }
 
-  if (done) return <span className="text-green-400 text-xs font-semibold">✓ {done}</span>
+  if (done) return <span className="text-green-600 text-xs font-semibold">✓ {done}</span>
 
   if (mode === 'reject') {
     return (
       <div className="flex flex-col gap-2 min-w-[180px]">
         <textarea value={notes} onChange={e => setNotes(e.target.value)}
           placeholder="Reason (optional)" rows={2}
-          className="text-xs bg-slate-700 text-white rounded px-2 py-1 border border-slate-600 focus:outline-none resize-none" />
+          className="bg-white border border-gray-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full resize-none" />
         <div className="flex gap-2">
           <button disabled={isPending} onClick={() => startTransition(async () => {
             await actionUpdateReportStatus(report.reportId, 'Rejected', notes)
             setDone('Rejected')
-          })} className="text-xs px-3 py-1 rounded bg-red-700 text-white font-semibold disabled:opacity-40">
+          })} className="bg-red-600 text-white font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-red-700 disabled:opacity-40 transition-colors">
             {isPending ? '…' : 'Confirm'}
           </button>
-          <button onClick={() => setMode('idle')} className="text-xs text-slate-400 hover:text-white">Cancel</button>
+          <button onClick={() => setMode('idle')} className="text-slate-500 hover:text-slate-700 text-xs">Cancel</button>
         </div>
       </div>
     )
@@ -49,18 +52,18 @@ export function TenantReportActions({ report }: Props) {
       <div className="flex flex-col gap-2 min-w-[180px]">
         <input type="number" min="0" step="0.01" value={amount} onChange={e => setAmount(e.target.value)}
           placeholder="$ Quote amount"
-          className="text-xs bg-slate-700 text-white rounded px-2 py-1 border border-slate-600 focus:outline-none w-full" />
+          className="bg-white border border-gray-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full" />
         <textarea value={notes} onChange={e => setNotes(e.target.value)}
           placeholder="Note to tenant (optional)" rows={2}
-          className="text-xs bg-slate-700 text-white rounded px-2 py-1 border border-slate-600 focus:outline-none resize-none" />
+          className="bg-white border border-gray-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full resize-none" />
         <div className="flex gap-2">
           <button disabled={isPending || !amount} onClick={() => startTransition(async () => {
             await actionUpdateReportStatus(report.reportId, 'Quoted', notes, parseFloat(amount))
             setDone('Quoted')
-          })} className="text-xs px-3 py-1 rounded bg-purple-700 text-white font-semibold disabled:opacity-40">
+          })} className="bg-violet-600 text-white font-semibold text-xs px-3 py-1.5 rounded-lg hover:bg-violet-700 disabled:opacity-40 transition-colors">
             {isPending ? '…' : 'Send Quote'}
           </button>
-          <button onClick={() => setMode('idle')} className="text-xs text-slate-400 hover:text-white">Cancel</button>
+          <button onClick={() => setMode('idle')} className="text-slate-500 hover:text-slate-700 text-xs">Cancel</button>
         </div>
       </div>
     )
@@ -78,16 +81,16 @@ export function TenantReportActions({ report }: Props) {
           urgency: report.urgency,
         })
         setDone('Approved')
-      })} className="text-xs px-2 py-1 rounded bg-green-700/40 text-green-300 hover:bg-green-700/70 disabled:opacity-40 transition-colors">
+      })} className="bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40">
         {isPending ? '…' : 'Approve'}
       </button>
       <button onClick={() => setMode('reject')}
-        className="text-xs px-2 py-1 rounded bg-red-900/40 text-red-300 hover:bg-red-900/70 transition-colors">
+        className="bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40">
         Reject
       </button>
       {report.wantsQuote && (
         <button onClick={() => setMode('quote')}
-          className="text-xs px-2 py-1 rounded bg-purple-900/40 text-purple-300 hover:bg-purple-900/70 transition-colors">
+          className="bg-violet-50 border border-violet-200 text-violet-700 hover:bg-violet-100 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40">
           Quote
         </button>
       )}
