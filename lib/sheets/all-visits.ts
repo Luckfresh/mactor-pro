@@ -1,4 +1,4 @@
-import { getSheetsClient, getSpreadsheetId, serialDateToISO, toNumber } from './client'
+import { getSheetsClient, getSpreadsheetId, parseDateValue, toNumber } from './client'
 import type { Visit, VisitPhotos, VisitSource, VisitStatus } from '@/types'
 
 const SHEET = 'All_Visits'
@@ -10,9 +10,14 @@ const SHEET = 'All_Visits'
 //          Kitchen(21) Floor(22) Electrical(23) Plumbing(24) HVAC(25) Extra(26)
 //          Before(27) After(28)
 
+function photoUrl(val: unknown): string | null {
+  const s = String(val ?? '').trim()
+  return s === '' || s === '0' ? null : s
+}
+
 function rowToVisit(row: unknown[]): Visit {
   return {
-    date: serialDateToISO(row[0] as number),
+    date: parseDateValue(row[0]),
     source: String(row[1] ?? '').trim() as VisitSource,
     technician: String(row[2] ?? '').trim(),
     building: String(row[3] ?? '').trim(),
@@ -29,19 +34,19 @@ function rowToVisit(row: unknown[]): Visit {
     status: String(row[14] ?? '').trim() as VisitStatus,
     materialCost: toNumber(row[15]),
     photos: {
-      common: String(row[16] ?? '') || null,
-      exterior: String(row[17] ?? '') || null,
-      windows: String(row[18] ?? '') || null,
-      wallCeiling: String(row[19] ?? '') || null,
-      bath: String(row[20] ?? '') || null,
-      kitchen: String(row[21] ?? '') || null,
-      floor: String(row[22] ?? '') || null,
-      electrical: String(row[23] ?? '') || null,
-      plumbing: String(row[24] ?? '') || null,
-      hvac: String(row[25] ?? '') || null,
-      extra: String(row[26] ?? '') || null,
-      before: String(row[27] ?? '') || null,
-      after: String(row[28] ?? '') || null,
+      common: photoUrl(row[16]),
+      exterior: photoUrl(row[17]),
+      windows: photoUrl(row[18]),
+      wallCeiling: photoUrl(row[19]),
+      bath: photoUrl(row[20]),
+      kitchen: photoUrl(row[21]),
+      floor: photoUrl(row[22]),
+      electrical: photoUrl(row[23]),
+      plumbing: photoUrl(row[24]),
+      hvac: photoUrl(row[25]),
+      extra: photoUrl(row[26]),
+      before: photoUrl(row[27]),
+      after: photoUrl(row[28]),
     } satisfies VisitPhotos,
   }
 }

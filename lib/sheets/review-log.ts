@@ -1,17 +1,16 @@
-import { getSheetsClient, getSpreadsheetId, serialDateToISO, toNumber, toBoolean } from './client'
+import { getSheetsClient, getSpreadsheetId, parseDateValue, toNumber, toBoolean } from './client'
 import type { ReviewEntry } from '@/types'
 
 const SHEET = 'Review_Log'
 
 // Columns: Visit_Key(0) Date(1) Technician(2) Building(3) Unit_ID(4)
 //          Area_Name(5) Visit_Type(6) Work_Performed(7) Duration(8)
-//          Material_Cost(9) Approved(10) PM_Comments(11) Approved_By(12)
-//          Approval_Date(13) Cycle_Label(14)
+//          Approved(9) PM_Comments(10) Approved_By(11) Approval_Date(12) Cycle_Label(13)
 
 function rowToReview(row: unknown[]): ReviewEntry {
   return {
     visitKey: String(row[0] ?? '').trim(),
-    date: serialDateToISO(row[1] as number),
+    date: parseDateValue(row[1]),
     technician: String(row[2] ?? '').trim(),
     building: String(row[3] ?? '').trim(),
     unitId: String(row[4] ?? '').trim(),
@@ -19,12 +18,12 @@ function rowToReview(row: unknown[]): ReviewEntry {
     visitType: String(row[6] ?? '').trim(),
     workPerformed: String(row[7] ?? '').trim(),
     duration: toNumber(row[8]),
-    materialCost: toNumber(row[9]),
-    approved: toBoolean(row[10]),
-    pmComments: String(row[11] ?? '').trim(),
-    approvedBy: String(row[12] ?? '').trim(),
-    approvalDate: serialDateToISO(row[13] as number),
-    cycleLabel: String(row[14] ?? '').trim(),
+    materialCost: 0,
+    approved: toBoolean(row[9]),
+    pmComments: String(row[10] ?? '').trim(),
+    approvedBy: String(row[11] ?? '').trim(),
+    approvalDate: parseDateValue(row[12]),
+    cycleLabel: String(row[13] ?? '').trim(),
   }
 }
 
@@ -39,7 +38,7 @@ export async function getReviewLog(filters?: {
   try {
     res = await sheets.spreadsheets.values.get({
       spreadsheetId: getSpreadsheetId(),
-      range: `${SHEET}!A2:O`,
+      range: `${SHEET}!A2:N`,
     })
   } catch (err) {
     throw new Error(`Failed to read ${SHEET} sheet: ${err instanceof Error ? err.message : String(err)}`)
@@ -48,7 +47,7 @@ export async function getReviewLog(filters?: {
   const rows = res.data.values ?? []
 
   return rows
-    .filter(row => row.length >= 10 && row[0])
+    .filter(row => row.length >= 9 && row[0])
     .map(rowToReview)
     .filter(entry => {
       if (filters?.building && entry.building !== filters.building) return false

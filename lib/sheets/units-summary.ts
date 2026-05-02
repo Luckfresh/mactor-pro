@@ -1,4 +1,4 @@
-import { getSheetsClient, getSpreadsheetId, serialDateToISO, toNumber } from './client'
+import { getSheetsClient, getSpreadsheetId, parseDateValue, toNumber } from './client'
 import type { UnitSummary } from '@/types'
 
 const SHEET = 'Units_Sumary'  // note: typo is in the actual sheet name
@@ -30,7 +30,7 @@ export async function getUnitsSummary(building?: string): Promise<UnitSummary[]>
       areaType: String(row[2] ?? '').trim(),
       areaName: String(row[3] ?? '').trim(),
       totalVisits: toNumber(row[4]),
-      lastVisit: serialDateToISO(row[5] as number),
+      lastVisit: parseDateValue(row[5]),
       totalHours: toNumber(row[6]),
       totalMaterialCost: toNumber(row[7]),
       inspectionVisits: toNumber(row[8]),

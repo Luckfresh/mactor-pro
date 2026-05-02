@@ -30,9 +30,32 @@ export function serialDateToISO(serial: number | string): string {
 
 export function toNumber(value: unknown): number {
   if (value === null || value === undefined || value === '') return 0
-  const cleaned = String(value).replace(/[$,]/g, '')
+  // Handle European locale: "$340,00" → 340, "4,5" → 4.5
+  const cleaned = String(value)
+    .replace(/[$\s]/g, '')
+    .replace(/\.(?=\d{3}[,\.])/g, '')  // remove thousands dot: "1.234,5" → "1234,5"
+    .replace(',', '.')                   // decimal comma → dot
   const n = parseFloat(cleaned)
   return isFinite(n) ? n : 0
+}
+
+// Parses both "dd/mm/yyyy" string dates and Excel serial numbers
+export function parseDateValue(value: unknown): string {
+  if (value === null || value === undefined || value === '') return ''
+  const s = String(value).trim()
+  if (s === '0') return ''
+  // dd/mm/yyyy or dd/m/yyyy
+  if (s.includes('/')) {
+    const parts = s.split('/')
+    if (parts.length === 3) {
+      const [d, m, y] = parts
+      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+    }
+  }
+  // Excel serial number
+  const num = parseFloat(s)
+  if (!isNaN(num) && num > 1000) return serialDateToISO(num)
+  return s
 }
 
 export function toBoolean(value: unknown): boolean {
