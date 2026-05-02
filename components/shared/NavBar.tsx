@@ -32,18 +32,15 @@ export function NavBar({ userName, role }: SidebarProps) {
 
   function isActive(href: string) {
     if (href === '/') return pathname === '/'
-    return pathname.startsWith(href)
+    return pathname === href || pathname.startsWith(href + '/')
   }
 
-  const initials = userName
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2) || 'U'
+  const initials = userName.trim()
+    ? userName.trim().split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : 'U'
 
   return (
-    <aside className="w-[220px] min-w-[220px] h-screen bg-slate-900 border-r border-slate-800 flex flex-col sticky top-0">
+    <aside aria-label="Application navigation" className="w-[220px] min-w-[220px] h-screen bg-slate-900 border-r border-slate-800 flex flex-col sticky top-0">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-slate-800 flex items-center gap-3">
         <span className="bg-amber-500 text-slate-900 font-black text-xs px-2.5 py-1.5 rounded-md tracking-wide">
@@ -57,7 +54,7 @@ export function NavBar({ userName, role }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
-        <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-2 mb-2">Main</p>
+        <h2 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-2 mb-2">Main</h2>
         {MAIN_LINKS.map(link => (
           <Link
             key={link.href}
@@ -68,12 +65,12 @@ export function NavBar({ userName, role }: SidebarProps) {
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
             }`}
           >
-            <span className="text-xs opacity-70">{link.icon}</span>
+            <span className="text-xs opacity-70" aria-hidden="true">{link.icon}</span>
             {link.label}
           </Link>
         ))}
 
-        <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-2 mb-2 mt-5">Tenants</p>
+        <h2 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-2 mb-2 mt-5">Tenants</h2>
         {tenantLinks.map(link => (
           <Link
             key={link.href}
@@ -84,7 +81,7 @@ export function NavBar({ userName, role }: SidebarProps) {
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
             }`}
           >
-            <span className="text-xs opacity-70">{link.icon}</span>
+            <span className="text-xs opacity-70" aria-hidden="true">{link.icon}</span>
             {link.label}
           </Link>
         ))}
@@ -101,6 +98,7 @@ export function NavBar({ userName, role }: SidebarProps) {
             <div className="text-slate-600 text-[10px] capitalize">{role}</div>
           </div>
           <button
+            aria-label="Sign out"
             onClick={() => signOut({ callbackUrl: '/login' })}
             className="text-slate-600 hover:text-slate-400 text-xs flex-shrink-0"
             title="Sign out"
