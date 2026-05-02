@@ -143,6 +143,32 @@ export async function completeInspectionRequest(
   })
 }
 
+export async function createInProgressInspectionRequest(data: {
+  building: string
+  unitId: string
+  areaName: string
+  startedBy: string
+}): Promise<string> {
+  const sheets = await getSheetsClient()
+  const id = `IR-${Date.now()}`
+  const today = new Date().toISOString().split('T')[0]
+  const now = new Date().toISOString()
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: getSpreadsheetId(),
+    range: `${SHEET}!A:M`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: {
+      values: [[
+        id, today, data.building, data.unitId, data.areaName,
+        data.startedBy, '', 'In Progress',
+        now, '', '', '', '',
+      ]],
+    },
+  })
+  return id
+}
+
 export async function cancelInspectionRequest(requestId: string): Promise<void> {
   const sheets = await getSheetsClient()
   const sheetRow = await findRequestRow(requestId)

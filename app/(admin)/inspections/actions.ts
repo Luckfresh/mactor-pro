@@ -3,6 +3,7 @@
 import { auth } from '@/lib/auth/config'
 import {
   createInspectionRequest,
+  createInProgressInspectionRequest,
   startInspectionRequest,
   cancelInspectionRequest,
 } from '@/lib/sheets/inspection-requests'
@@ -29,6 +30,20 @@ export async function actionStartInspection(requestId: string) {
   if (session?.user.role !== 'admin') throw new Error('Unauthorized')
 
   await startInspectionRequest(requestId)
+  revalidatePath('/inspections')
+  redirect(`/inspect?requestId=${requestId}`)
+}
+
+export async function actionStartDirectInspection(data: {
+  building: string
+  unitId: string
+  areaName: string
+}) {
+  const session = await auth()
+  if (session?.user.role !== 'admin') throw new Error('Unauthorized')
+
+  const startedBy = session.user.name ?? session.user.email ?? 'admin'
+  const requestId = await createInProgressInspectionRequest({ ...data, startedBy })
   revalidatePath('/inspections')
   redirect(`/inspect?requestId=${requestId}`)
 }
