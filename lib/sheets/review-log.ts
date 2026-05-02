@@ -57,7 +57,37 @@ export async function getReviewLog(filters?: {
     })
 }
 
-export async function getPendingApprovalCount(building?: string): Promise<number> {
+export async function approveReviewEntry(
+  visitKey: string,
+  approvedBy: string,
+  comments: string,
+  approved: boolean
+): Promise<void> {
+  const sheets = await getSheetsClient()
+  const spreadsheetId = getSpreadsheetId()
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${SHEET}!A2:A`,
+  })
+  const keys = res.data.values ?? []
+  const rowIdx = keys.findIndex(r => String(r[0] ?? '').trim() === visitKey)
+  if (rowIdx === -1) throw new Error(`Visit key not found: ${visitKey}`)
+
+  const sheetRow = rowIdx + 2
+  const today = new Date().toISOString().split('T')[0]
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `${SHEET}!J${sheetRow}:M${sheetRow}`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: {
+      values: [[approved ? 'TRUE' : 'FALSE', comments, approvedBy, today]],
+    },
+  })
+}
+
+export async function getPendingApprovalCount(building?: string, cycleLabel?: string): Promise<number> {
   const sheets = await getSheetsClient()
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: getSpreadsheetId(),
@@ -66,8 +96,10 @@ export async function getPendingApprovalCount(building?: string): Promise<number
   const rows = res.data.values ?? []
   return rows.filter(row => {
     if (!row[0] || String(row[0]).trim() === '') return false
-    const approvedRaw = String(row[9] ?? '').trim().toLowerCase()
     if (building && String(row[3] ?? '').trim() !== building) return false
+    // Only count entries from the current cycle — historical data is pre-approval-workflow
+    if (cycleLabel && String(row[13] ?? '').trim() !== cycleLabel) return false
+    const approvedRaw = String(row[9] ?? '').trim().toLowerCase()
     return approvedRaw === 'false' || approvedRaw === 'no' || approvedRaw === '0' || approvedRaw === ''
   }).length
 }

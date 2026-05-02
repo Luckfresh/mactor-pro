@@ -1,15 +1,10 @@
 import { auth } from '@/lib/auth/config'
 import { getReviewLog } from '@/lib/sheets/review-log'
 import { formatDate, getCurrentCycleLabel } from '@/lib/hours'
+import { ApprovalActions } from '@/components/admin/ApprovalActions'
 import Link from 'next/link'
 
 const CYCLE_DAY_START = 25
-
-const BUILDING_COLOR: Record<string, string> = {
-  'PHASE I 72 Isabella': 'bg-blue-900/50 text-blue-300',
-  'PHASE II Church': 'bg-green-900/50 text-green-300',
-  'PHASE III Wellesley': 'bg-amber-900/50 text-amber-300',
-}
 
 export default async function ApprovalsPage() {
   const session = await auth()
@@ -32,14 +27,14 @@ export default async function ApprovalsPage() {
         <Link href="/" className="text-slate-400 text-sm hover:text-white">← Dashboard</Link>
         <h1 className="text-white text-2xl font-bold mt-2">Pending Approvals</h1>
         <p className="text-slate-400 text-sm mt-1">
-          {pending.length} {pending.length === 1 ? 'item' : 'items'} awaiting review
+          {pending.length} {pending.length === 1 ? 'item' : 'items'} awaiting review · Cycle {cycleLabel}
         </p>
       </div>
 
       {pending.length === 0 && (
         <div className="bg-slate-800 rounded-xl p-8 text-center">
           <p className="text-green-400 text-lg font-semibold">All up to date ✓</p>
-          <p className="text-slate-400 text-sm mt-1">No pending approvals across any building.</p>
+          <p className="text-slate-400 text-sm mt-1">No pending approvals for cycle {cycleLabel}.</p>
         </div>
       )}
 
@@ -52,28 +47,35 @@ export default async function ApprovalsPage() {
             </span>
           </h2>
           <div className="bg-slate-800 rounded-xl overflow-hidden">
-            <div className="grid grid-cols-[100px_1fr_150px_80px_80px] gap-2 px-4 py-2 text-slate-400 text-xs uppercase tracking-wide border-b border-slate-700">
+            <div className="grid grid-cols-[100px_1fr_150px_70px_180px] gap-2 px-4 py-2 text-slate-400 text-xs uppercase tracking-wide border-b border-slate-700">
               <span>Date</span>
               <span>Unit / Work</span>
               <span>Type</span>
               <span>Hours</span>
-              <span>Cycle</span>
+              <span>Action</span>
             </div>
             {entries.map((entry, i) => (
-              <Link
+              <div
                 key={i}
-                href={`/buildings/${encodeURIComponent(building)}/units/${encodeURIComponent(entry.unitId)}`}
-                className="grid grid-cols-[100px_1fr_150px_80px_80px] gap-2 px-4 py-3 text-sm border-b border-slate-700/50 last:border-0 hover:bg-slate-700/50 transition-colors"
+                className="grid grid-cols-[100px_1fr_150px_70px_180px] gap-2 px-4 py-3 text-sm border-b border-slate-700/50 last:border-0 items-start"
               >
-                <span className="text-slate-400 text-xs">{formatDate(entry.date)}</span>
+                <span className="text-slate-400 text-xs pt-1">{formatDate(entry.date)}</span>
                 <div>
-                  <p className="text-white text-xs font-medium">{entry.areaName || entry.unitId}</p>
+                  <Link
+                    href={`/buildings/${encodeURIComponent(building)}/units/${encodeURIComponent(entry.unitId)}`}
+                    className="text-white text-xs font-medium hover:text-amber-400 transition-colors"
+                  >
+                    {entry.areaName || entry.unitId}
+                  </Link>
                   <p className="text-slate-500 text-xs truncate">{entry.workPerformed}</p>
+                  {entry.technician && (
+                    <p className="text-slate-600 text-xs">{entry.technician}</p>
+                  )}
                 </div>
-                <span className="text-slate-300 text-xs">{entry.visitType}</span>
-                <span className="text-white text-xs">{entry.duration.toFixed(1)}h</span>
-                <span className="text-slate-400 text-xs">{entry.cycleLabel}</span>
-              </Link>
+                <span className="text-slate-300 text-xs pt-1">{entry.visitType}</span>
+                <span className="text-white text-xs pt-1">{entry.duration.toFixed(1)}h</span>
+                <ApprovalActions visitKey={entry.visitKey} />
+              </div>
             ))}
           </div>
         </div>
