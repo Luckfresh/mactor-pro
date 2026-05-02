@@ -46,7 +46,7 @@ export default async function AdminOverviewPage() {
     allowedConfigs.map(async config => {
       const [units, pending] = await Promise.all([
         getUnitsSummary(config.buildingName),
-        getPendingApprovalCount(config.buildingName),
+        getPendingApprovalCount(config.buildingName, cycleLabel),
       ])
       const hoursUsedThisCycle = getHoursUsedInBuilding(allVisits, config.buildingName, cycleStart, cycleEnd)
 

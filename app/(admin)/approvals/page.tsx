@@ -1,7 +1,9 @@
 import { auth } from '@/lib/auth/config'
 import { getReviewLog } from '@/lib/sheets/review-log'
-import { formatDate } from '@/lib/hours'
+import { formatDate, getCurrentCycleLabel } from '@/lib/hours'
 import Link from 'next/link'
+
+const CYCLE_DAY_START = 25
 
 const BUILDING_COLOR: Record<string, string> = {
   'PHASE I 72 Isabella': 'bg-blue-900/50 text-blue-300',
@@ -12,7 +14,8 @@ const BUILDING_COLOR: Record<string, string> = {
 export default async function ApprovalsPage() {
   const session = await auth()
 
-  const allPending = await getReviewLog({ approved: false })
+  const cycleLabel = getCurrentCycleLabel(CYCLE_DAY_START)
+  const allPending = await getReviewLog({ approved: false, cycleLabel })
   const pending = session?.user.role === 'admin'
     ? allPending
     : allPending.filter(e => (session?.user.buildings ?? []).includes(e.building))
